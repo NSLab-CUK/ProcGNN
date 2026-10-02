@@ -2,12 +2,22 @@
 
 ProcGNN is a process-graph learning framework for stream-property prediction, developed at [Network Science Lab @ CUK](https://nslab-cuk.github.io/) and implemented directly in PyTorch.
 
-[![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)](requirements_34.txt)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.5.1-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
-[![CUDA](https://img.shields.io/badge/CUDA-12.1-76B900?logo=nvidia&logoColor=white)](requirements_34.txt)
-[![Last commit](https://img.shields.io/github/last-commit/NSLab-CUK/ProcGNN)](https://github.com/NSLab-CUK/ProcGNN/commits/main)
-[![Stars](https://img.shields.io/github/stars/NSLab-CUK/ProcGNN)](https://github.com/NSLab-CUK/ProcGNN/stargazers)
-[![Issues](https://img.shields.io/github/issues/NSLab-CUK/ProcGNN)](https://github.com/NSLab-CUK/ProcGNN/issues)
+<p align=center>
+  <a href="https://www.python.org/downloads/release/python-360/">
+    <img src="https://img.shields.io/badge/Python-3.10-3776AB?logo=python&style=flat-square" alt="Python">
+  </a>    
+  <a href="https://github.com/pytorch/pytorch">
+    <img src="https://img.shields.io/badge/PyTorch-2.5.1-FF6F00?logo=pytorch&style=flat-square" alt="pytorch">
+  </a>
+  <img src="https://img.shields.io/badge/CUDA-12.1-76B900?logo=nvidia&logoColor=white&style=flat-square" alt="pytorch">
+  <img src="https://custom-icon-badges.demolab.com/github/last-commit/NSLab-CUK/ProcGNN?logo=history&logoColor=white&style=flat-square"/>
+  <img src="https://custom-icon-badges.demolab.com/github/languages/code-size/NSLab-CUK/ProcGNN?logo=file-code&logoColor=white&style=flat-square"/>
+  <img src="https://custom-icon-badges.demolab.com/github/issues-pr-closed/NSLab-CUK/ProcGNN?color=purple&logo=git-pull-request&logoColor=white&style=flat-square"/>
+  <img src="https://custom-icon-badges.demolab.com/github/v/tag/NSLab-CUK/ProcGNN?logo=tag&logoColor=white&style=flat-square"/>
+  <img src="https://custom-icon-badges.demolab.com/github/stars/NSLab-CUK/ProcGNN?logo=star&style=flat-square"/>
+  <img src="https://custom-icon-badges.demolab.com/github/issues-raw/NSLab-CUK/ProcGNN?logo=issue&style=flat-square"/>
+  <img src="https://custom-icon-badges.demolab.com/github/license/NSLab-CUK/ProcGNN?logo=law&style=flat-square"/>
+</p>
 
 ## 1. Overview
 
