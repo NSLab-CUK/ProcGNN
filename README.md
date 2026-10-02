@@ -1,7 +1,8 @@
 # ProcGNN
 
 Physics-informed graph neural networks for stream-wise prediction in chemical-process flowsheets, with reproducible training, evaluation, paper figures, and GNN-coupled economic optimisation.
-<img width="8955" height="4050" alt="모델 아키텍처 FIg1 최종 drawio" src="https://github.com/user-attachments/assets/78474afd-ff72-4d56-909f-17cd979f095d" />
+<img width="7625" height="4050" alt="모델 아키텍처 FIg1 최종 drawio" src="https://github.com/user-attachments/assets/5558ea5c-fa0b-47ac-b69a-9c46c9f591e9" />
+
 
 Repository: [NSLab-CUK/ProcGNN](https://github.com/NSLab-CUK/ProcGNN).
 
