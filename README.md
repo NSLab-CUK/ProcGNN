@@ -152,9 +152,17 @@ A paper-specific citation and publication link will be added once the title, aut
 
 ## 5. Contributors
 
-Developed at [Network Science Lab @ CUK](https://nslab-cuk.github.io/). Repository maintainer: [JunheeCho3337](https://github.com/JunheeCho3337).
+<a href="https://github.com/NSLab-CUK/CaMol/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=NSLab-CUK/CaMol" />
+</a>
 
-Please [open an issue](https://github.com/NSLab-CUK/ProcGNN/issues) for questions or reproducibility reports.
 
-No software license is currently included in the repository.
+
+<br>
+
+***
+
+<a href="https://nslab-cuk.github.io/"><img src="https://github.com/NSLab-CUK/NSLab-CUK/raw/main/Logo_Dual_Wide.png"/></a>
+
+***
 
