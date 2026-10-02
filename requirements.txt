@@ -1,0 +1,24 @@
+# Core training/runtime dependencies.
+# Install CUDA-specific torch wheels separately when needed, e.g.
+#   pip install torch --index-url https://download.pytorch.org/whl/cu121
+torch
+
+# Data and config handling
+numpy
+pandas
+PyYAML
+openpyxl
+
+# Training UX and reporting
+tqdm
+matplotlib
+Pillow
+shap
+
+# Hyperparameter search / diagnostics
+optuna
+scikit-learn
+xgboost
+
+# Optional graph visualization/export scripts
+networkx

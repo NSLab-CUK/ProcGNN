@@ -1,0 +1,100 @@
+# ==========================================
+# 怨듭젙 Surrogate 紐⑤뜽 ?ㅼ젙
+# ==========================================
+
+# --- ?몄퐫???ш린/源딆씠 ---
+hidden_dim: 512               # ???李⑥썝 ?ш린. ?쒕떇 ?듭뀡: 256, 320, 384, 448, 512
+num_layers: 5                 # 硫붿떆吏 ?⑥떛 ?덉씠???? ?듭뀡: 3, 4, 5, 6 
+attn_hidden_dim: 512           # ?댄뀗???대? MLP 李⑥썝. ?쒕떇 ?듭뀡: 64, 96, 128, 192, 256
+
+# --- ?낅젰 ?꾨쿋??李⑥썝 ---
+role_emb_dim: 96             # role ?꾨쿋??李⑥썝. ?쒕떇 ?듭뀡: 32, 48, 64, 96, 128
+unit_emb_dim: 64             # unit ?꾨쿋??李⑥썝. ?쒕떇 ?듭뀡: 32, 48, 64, 96, 128
+hx_role_emb_dim: 24             # HX role ?꾨쿋??李⑥썝. ?쒕떇 ?듭뀡: 16, 24, 32, 48, 64 ?꾩옱???ъ슜 ?쒗븿
+
+# --- MLP 釉붾줉 源딆씠 ---
+input_mlp_layers: 2            # ?낅젰 ?몄퐫??MLP ?덉씠???? ?듭뀡: 1, 2, 3
+diff_mlp_layers: 2             # differential ?몄퐫??MLP ?덉씠???? ?듭뀡: 1, 2, 3
+update_mlp_layers: 2           # ?낅뜲?댄듃 MLP ?덉씠???? ?듭뀡: 1, 2, 3
+final_mlp_layers: 2            # 理쒖쥌 psi projection MLP ?덉씠???? ?듭뀡: 1, 2, 3
+
+# --- ?듭떖 硫붿떆吏 ?⑥떛 紐⑤뱶 ---
+diff_mode: concat              # differential 寃고빀 諛⑹떇. ?듭뀡: add, concat
+fusion_mode: concat            # forward/backward 濡쒖뺄 ?듯빀 諛⑹떇. ?듭뀡: concat, sum, mean, weighted
+global_pool: concat_set2set    # 洹몃옒???留? ?듭뀡: mean, sum, max, attention, concat_set2set (2횞hidden readout)
+set2set_processing_steps: 3   # concat_set2set LSTM 諛섎났 ?잛닔
+
+# --- ?뺢퇋??/ ?쒖꽦??---
+dropout: 0.1                   # dropout 鍮꾩쑉. ?듭뀡: 0.0 ~ 0.5
+activation: relu               # ?쒖꽦???⑥닔. ?듭뀡: relu, gelu, silu, leaky_relu, tanh
+
+# --- ?낅젰 ?뱀쭠 ?ъ슜 ?ㅼ쐞移?---
+use_role_embedding: true        #role ?꾨쿋???ъ슜 ?щ?(source/unit/sink). ?듭뀡: true, false
+use_unit_embedding: true       # unit ????꾨쿋???ъ슜 ?щ?. ?듭뀡: true, false
+use_hx_role_embedding: false   # HX role ?꾨쿋???ъ슜 ?щ?. ?듭뀡: true, false
+oper_mask_mode: concat         # oper mask ?낅젰 諛⑹떇. ?듭뀡: ignore, concat, gated
+
+initial_residual_mode: per_layer    # h0 residual 二쇱엯 ?꾩튂. ?듭뀡: none, final, per_layer, both
+initial_residual_alpha: 0.05    # per_layer 紐⑤뱶?먯꽌 媛??덉씠????h <- h + alpha*h0 鍮꾩쑉. ?듭뀡: 0.0~1.0
+input_residual: true           # [deprecated] initial_residual_mode濡??泥대맖 (?섏쐞?명솚 ?좎?)
+layer_residual_mode: interp      # ?덉씠??媛?residual 蹂닿컙 紐⑤뱶. ?듭뀡: none, interp
+layer_residual_alpha: 0.5      # interp 紐⑤뱶 蹂닿컙 怨꾩닔: h=(1-a)h_prev + a*h_new
+layer_residual_norm: false     # true硫??덉씠?대퀎 residual ??LayerNorm ?곸슜
+
+# ?ㅽ뿕 ?꾨낫(?????ъ슜?섎릺 h0 怨쇱＜??諛⑹?: per_layer + interp):
+# num_layers: 5
+# initial_residual_mode: per_layer
+# initial_residual_alpha: 0.05
+# layer_residual_mode: interp
+# layer_residual_alpha: 0.5
+# layer_residual_norm: false
+#
+# num_layers: 6
+# initial_residual_mode: per_layer
+# initial_residual_alpha: 0.05
+# layer_residual_mode: interp
+# layer_residual_alpha: 0.3
+# layer_residual_norm: false
+
+# --- 異쒕젰 / 由щ뱶?꾩썐 湲곕낯媛?---
+use_final_projection: true     # psi([h_loc||g]) ?곸슜 ?щ?, false硫?h_loc 吏곸젒 ?ъ슜. ?듭뀡: true, false
+readout_feature_source: hbar   # TaskSpec 湲곕낯 feature source. ?듭뀡: hbar, local, global
+
+# --- Edge stream encoder ---
+use_edge_features: true
+edge_stream_role_emb_dim: 64   # ?쒕떇 ?듭뀡: 16, 24, 32, 48
+property_stream_role:
+  enabled: true
+  embedding_dim: 16
+  unknown_role_id: 0
+edge_stream_id_emb_dim: 96    # ?쒕떇 ?듭뀡: 24, 32, 48, 64
+edge_stream_vocab_size: 512
+edge_mlp_layers: 2
+edge_oper_dim: 5
+
+# Per-edge stream vector regression head (requires use_edge_features: true).
+use_edge_stream_head: false
+edge_stream_out_dim: 12
+edge_stream_mlp_hidden_dim: 128
+edge_stream_mlp_layers: 2
+
+# All-edge stream vector head: concat(h_src,h_dst,edge_struct) -> MLP -> [E, stream_target_dim] (no link prediction).
+use_edge_decoder: false
+edge_decoder_hidden_dim: 256
+edge_decoder_dropout: 0.0
+stream_target_dim: 12
+edge_struct_dim: 5
+edge_head_type: single        # options: single, grouped_property, pi_grouped_property
+edge_head_dropout: 0.1
+edge_head_shared_dims: [512, 512]
+edge_head_frac_dims: [256, 128]
+edge_head_flow_dims: [512, 256, 128]
+edge_head_cond_dims: [256, 128]
+cond_head_output_dim: 2
+frac_head_output_dim: 7
+mass_head_output_dim: 3
+property_head_hidden_dim: 128
+property_head_num_layers: 2
+fraction_activation: softmax
+species_order: []
+

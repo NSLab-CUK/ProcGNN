@@ -1,0 +1,59 @@
+# Python caches and local tooling
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+.codex/
+.agents/
+
+# IDE and operating-system state
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Training artefacts, checkpoints, and local logs
+/outputs/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.tensorboard
+*.log
+wandb/
+runs/
+
+# Local/raw research data. Keep only the public data guide in Git.
+/data/**
+!/data/README.md
+
+# Proprietary simulator inputs and Aspen validation workbooks
+*.bkp
+*.apw
+*.apwz
+*.asp
+*.xlsm
+/GNN_Aspen_재검증_통합비교.xlsx
+/Aspen_GNN_Optimization_Validation_20260915_revised.xlsx
+# Local methodology report; preserve on disk, do not upload with source code.
+/economic module GA/경제성 평가 모듈/*.docx
+
+# Temporary exports and local archive mirrors
+/raidrive-researcher/
+/a5000v2/
+*.tmp
+*.bak
+
+# Legacy in-house protocol notes and generated paper tables containing local
+# server paths. Public replacement documentation lives in docs/.
+/docs/ALL_EXPERIMENT_PROTOCOL_SETTINGS_0907.md
+/docs/ECONOMIC_GA_PAPER_PROTOCOL_0914.md
+/docs/paper_tables/

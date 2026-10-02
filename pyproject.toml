@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "process-graph"
+version = "0.1.0"
+description = "process_graph: chemical process surrogate library"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "torch",
+    "openpyxl",
+    "PyYAML",
+    "pandas",
+    "tqdm",
+    "matplotlib",
+    "optuna",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.urls]
+Repository = "https://github.com/NSLab-CUK/ProcGNN"

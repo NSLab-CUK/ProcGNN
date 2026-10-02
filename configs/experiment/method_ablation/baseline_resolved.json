@@ -1,0 +1,32 @@
+{
+  "source": "load_experiment_config(configs/experiment/method_ablation/exp_B0_baseline.yaml)",
+  "capacity_ablation_summary": "See outputs/process_kfold_capacity_ablation/summary/experiment_summary.csv when available.",
+  "model": {
+    "attn_hidden_dim": 512,
+    "diff_mlp_layers": 2,
+    "diff_mode": "concat",
+    "edge_decoder_hidden_dim": 128,
+    "edge_struct_dim": 5,
+    "final_mlp_layers": 2,
+    "fusion_mode": "concat",
+    "global_pool": "concat_set2set",
+    "hidden_dim": 512,
+    "initial_residual_alpha": 0.05,
+    "initial_residual_mode": "per_layer",
+    "input_mlp_layers": 2,
+    "layer_residual_alpha": 0.5,
+    "layer_residual_mode": "interp",
+    "layer_residual_norm": false,
+    "num_layers": 5,
+    "role_emb_dim": 96,
+    "stream_target_dim": 12,
+    "unit_emb_dim": 64,
+    "update_mlp_layers": 2,
+    "use_edge_decoder": true,
+    "use_edge_features": true,
+    "use_edge_stream_head": false,
+    "use_final_projection": true,
+    "use_hx_role_embedding": false
+  },
+  "data_task_mode": "edge_all"
+}

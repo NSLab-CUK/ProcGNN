@@ -1,0 +1,17 @@
+experiment_id,experiment_name,config_path,adapter_enabled,pinn_schedule_enabled,target_edge_weight,encoder_hidden_dim,expected_pi_head_input_dim,gpu_batch,gpu_id,output_root
+E01,base_fixed_tw5_d2051,configs/experiment/factorial_260716/e01_base_fixed_tw5_d2051.yaml,false,false,5,512,2051,1,0,outputs/factorial_260716/e01_base_fixed_tw5_d2051
+E02,base_fixed_tw5_d1027,configs/experiment/factorial_260716/e02_base_fixed_tw5_d1027.yaml,false,false,5,256,1027,2,0,outputs/factorial_260716/e02_base_fixed_tw5_d1027
+E03,base_fixed_tw40_d2051,configs/experiment/factorial_260716/e03_base_fixed_tw40_d2051.yaml,false,false,40,512,2051,2,1,outputs/factorial_260716/e03_base_fixed_tw40_d2051
+E04,base_fixed_tw40_d1027,configs/experiment/factorial_260716/e04_base_fixed_tw40_d1027.yaml,false,false,40,256,1027,1,1,outputs/factorial_260716/e04_base_fixed_tw40_d1027
+E05,base_sched_tw5_d2051,configs/experiment/factorial_260716/e05_base_sched_tw5_d2051.yaml,false,true,5,512,2051,2,2,outputs/factorial_260716/e05_base_sched_tw5_d2051
+E06,base_sched_tw5_d1027,configs/experiment/factorial_260716/e06_base_sched_tw5_d1027.yaml,false,true,5,256,1027,1,2,outputs/factorial_260716/e06_base_sched_tw5_d1027
+E07,base_sched_tw40_d2051,configs/experiment/factorial_260716/e07_base_sched_tw40_d2051.yaml,false,true,40,512,2051,1,3,outputs/factorial_260716/e07_base_sched_tw40_d2051
+E08,base_sched_tw40_d1027,configs/experiment/factorial_260716/e08_base_sched_tw40_d1027.yaml,false,true,40,256,1027,2,3,outputs/factorial_260716/e08_base_sched_tw40_d1027
+E09,adapter_fixed_tw5_d2051,configs/experiment/factorial_260716/e09_adapter_fixed_tw5_d2051.yaml,true,false,5,512,2051,2,4,outputs/factorial_260716/e09_adapter_fixed_tw5_d2051
+E10,adapter_fixed_tw5_d1027,configs/experiment/factorial_260716/e10_adapter_fixed_tw5_d1027.yaml,true,false,5,256,1027,1,4,outputs/factorial_260716/e10_adapter_fixed_tw5_d1027
+E11,adapter_fixed_tw40_d2051,configs/experiment/factorial_260716/e11_adapter_fixed_tw40_d2051.yaml,true,false,40,512,2051,1,5,outputs/factorial_260716/e11_adapter_fixed_tw40_d2051
+E12,adapter_fixed_tw40_d1027,configs/experiment/factorial_260716/e12_adapter_fixed_tw40_d1027.yaml,true,false,40,256,1027,2,5,outputs/factorial_260716/e12_adapter_fixed_tw40_d1027
+E13,adapter_sched_tw5_d2051,configs/experiment/factorial_260716/e13_adapter_sched_tw5_d2051.yaml,true,true,5,512,2051,1,6,outputs/factorial_260716/e13_adapter_sched_tw5_d2051
+E14,adapter_sched_tw5_d1027,configs/experiment/factorial_260716/e14_adapter_sched_tw5_d1027.yaml,true,true,5,256,1027,2,6,outputs/factorial_260716/e14_adapter_sched_tw5_d1027
+E15,adapter_sched_tw40_d2051,configs/experiment/factorial_260716/e15_adapter_sched_tw40_d2051.yaml,true,true,40,512,2051,2,7,outputs/factorial_260716/e15_adapter_sched_tw40_d2051
+E16,adapter_sched_tw40_d1027,configs/experiment/factorial_260716/e16_adapter_sched_tw40_d1027.yaml,true,true,40,256,1027,1,7,outputs/factorial_260716/e16_adapter_sched_tw40_d1027

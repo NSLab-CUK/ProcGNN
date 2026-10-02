@@ -1,0 +1,98 @@
+# 공통 데이터 설정.
+# 주의: edge_all 실험에서는 configs/experiment/*.yaml의 overrides.data가 여기 값을 덮어쓴다.
+
+# --- 그래프/스펙 입력 ---
+process_spec_dir: data/process_specs/raw                 # Excel 공정 스펙 디렉토리
+process_spec_pattern: "Process*_Adjacency_Matrix.xlsx"   # 공정 스펙 파일명 패턴
+topology_mode: stream_edge                               # stream_edge=canonical stream graph, excel_node=legacy Excel node graph
+use_canonical_graph_spec_v3: true                        # edge_all은 v3 canonical graph spec 필수
+canonical_graph_spec_v3_dir: data/reference/v3           # canonical node/edge/answer-edge reference 위치
+stream_edge_mapping_path: data/main_data_Streams/process_1_10_stream_edge_mapping_final.csv # stream-edge 매핑 CSV
+stream_data_dir: data/main_data_Streams                  # 공정별 stream property CSV 디렉토리
+
+# --- 샘플 CSV 경로 ---
+train_data_path: data/datasets_v3/process_main_merged.csv # 기본 병합 CSV. 실험 YAML에서 train.csv 등으로 덮어쓸 수 있음
+val_data_path: data/datasets_v3/val.csv                   # validation CSV 기본값
+test_data_path: data/datasets_v3/test.csv                 # test CSV 기본값
+
+# --- Resolver / feature 생성 ---
+passthrough_policy: zero                                  # passthrough cell 처리: zero 또는 inherit_upstream
+use_oper_mask: true                                       # x_oper_mask를 batch에 포함하고 oper_mask_mode에서 사용
+missing_value_strategy: zero                              # 결측값 처리: zero 또는 nan
+
+# --- 정규화 ---
+normalize_x_oper: true                                    # node operating feature를 train split mean/std로 z-score
+normalize_targets: true                                   # legacy multitask fixed target 정규화. edge_all은 실험 YAML에서 false로 덮어씀
+normalize_y_edge: false                                   # edge_all y_edge 정규화 기본값. edge_all 실험 YAML에서 true로 덮어씀
+
+# --- task mode ---
+task_mode: multitask                                      # 기본은 legacy multitask. edge_all 실험 YAML에서 edge_all로 덮어씀
+
+# --- legacy fixed target heads ---
+# edge_all에서는 사용하지 않지만, multitask/target_only 호환을 위해 유지한다.
+fixed_tasks:
+  target:
+    enabled: true                                         # target H2 head 사용 여부
+    target_name: target                                   # prediction/loss dict key
+    target_variable: PROD_H2_MoleFlow                     # CSV에서 읽을 H2 계열 기본 컬럼
+    readout_type: node                                    # node/node_set/graph/edge
+    loss_type: smooth_l1                                  # fixed target loss
+    masked: false                                         # mask 기반 loss 여부
+    transform: none                                       # none 또는 log1p
+    clip_max_percentile: 99.0                             # train split 기준 target clipping percentile
+  tailgas:
+    enabled: true                                         # tailgas CO2 head 사용 여부
+    target_name: tailgas                                  # prediction/loss dict key
+    target_variable: PROD_CO2_MoleFlow                    # CSV에서 읽을 CO2 계열 기본 컬럼
+    readout_type: node                                    # node/node_set/graph/edge
+    loss_type: smooth_l1                                  # fixed target loss
+    masked: false                                         # mask 기반 loss 여부
+    transform: none                                       # none 또는 log1p
+    clip_max_percentile: null                             # null이면 clipping 미사용
+
+# --- legacy decoder category heads ---
+# Excel decoder sheet 기반 node-level auxiliary labels. edge_all에서는 켜면 안 된다.
+decoder_tasks:
+  power:
+    enabled: false                                        # power decoder head 사용 여부
+    loss_type: smooth_l1                                  # power loss
+    readout_type: node                                    # node-level readout
+  heat_duty:
+    enabled: false                                        # heat duty decoder head 사용 여부
+    loss_type: smooth_l1                                  # heat duty loss
+    readout_type: node                                    # node-level readout
+  flow:
+    enabled: false                                        # flow decoder head 사용 여부
+    loss_type: smooth_l1                                  # flow loss
+    readout_type: node                                    # node-level readout
+  hx_area:
+    enabled: false                                        # heat exchanger area decoder head 사용 여부
+    loss_type: smooth_l1                                  # hx area loss
+    readout_type: node                                    # node-level readout
+
+# --- legacy single auxiliary head ---
+# decoder_tasks와 동시에 켜면 안 된다.
+aux_task:
+  enabled: false                                          # 단일 aux head 사용 여부
+  task_name: heat_duty                                    # aux가 대표할 decoder category
+  target_name: aux                                        # prediction/loss dict key
+  readout_type: node                                      # node/node_set/graph
+  loss_type: smooth_l1                                    # aux loss
+  masked: true                                            # missing aux target mask 적용
+
+# --- graph label/cache ---
+graph_label_mode: task_dict                               # batch target dict 구성 방식
+cache_process_specs: true                                 # Excel/canonical spec 파싱 결과 메모리 캐시
+
+# --- CSV column names ---
+process_id_column: process_id                             # 공정 ID 컬럼명
+split_column: split                                       # train/val/test split 컬럼명
+ 
+# Optional PI edge head species order. When non-empty and model.edge_head_type=pi_grouped_property,
+# len(species_order) must match model.frac_head_output_dim.
+species_order: []
+molecular_weight: {}
+use_rho_target: true
+use_h_target: true
+use_volume_flow_target: false
+use_enthalpy_flow_target: false

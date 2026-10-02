@@ -1,0 +1,46 @@
+Metadata-Version: 2.4
+Name: process-graph
+Version: 0.1.0
+Summary: process_graph: chemical process surrogate library
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: torch
+Requires-Dist: openpyxl
+Requires-Dist: PyYAML
+Requires-Dist: pandas
+Requires-Dist: tqdm
+Requires-Dist: matplotlib
+
+# Chemical Process Surrogate Project
+
+This repository is organized around one canonical package, one scripts folder, and one configs folder.
+
+## Canonical Directory Layout
+
+- `src/process_graph/`: core library package (models, parser, resolver, dataset, experiment config loaders)
+- `scripts/`: runnable entry scripts only
+- `configs/`: runtime configuration files (`experiment`, `model`, `data`, `train`, `overrides`)
+- `data/`: input datasets/specs
+- `outputs/`: training/debug artifacts
+
+## Script Naming Convention
+
+- Main training: `scripts/train_surrogate.py` (alias to `scripts/train_process_surrogate.py`)
+- Root shortcut entry: `train.py` (delegates to main training script)
+- Dataset prep: `scripts/prepare_datasets_v2.py`, `scripts/prepare_single_process.py` (alias to `scripts/prepare_single_process_dataset.py`)
+- Spec parsing/smoke checks: `scripts/parse_all_process_specs.py`, `scripts/debug_readout_nodes.py` (alias to `scripts/smoke_readout_nodes.py`)
+- Target-only diagnostics: `scripts/target_only_debug/train_target_only.py`
+
+## Config Naming Convention
+
+- Base experiment: `configs/experiment/process_surrogate_base.yaml`
+- Model: `configs/model/process_encoder.yaml`
+- Data: `configs/data/process_data.yaml`
+- Train: `configs/train/process_train.yaml`
+- Debug overrides: `configs/overrides/`
+
+## Notes
+
+- Keep reusable code under `src/process_graph/`; avoid adding logic directly into scripts.
+- Keep one script = one entry purpose, and keep script names snake_case.
+- Store generated artifacts under `outputs/` only.

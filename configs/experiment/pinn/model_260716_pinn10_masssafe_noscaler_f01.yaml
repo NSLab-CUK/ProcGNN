@@ -1,0 +1,598 @@
+experiment_name: model_260716_pinn10_masssafe_noscaler_f01
+seed: 42
+device: cuda
+eval_only: false
+model_config: configs/model/process_encoder.yaml
+train_config: configs/train/process_train.yaml
+data_config: configs/data/process_data.yaml
+output_dir: outputs/model_260716_pinn10_masssafe_noscaler_f01
+save_dir: outputs/model_260716_pinn10_masssafe_noscaler_f01/checkpoints
+log_dir: outputs/model_260716_pinn10_masssafe_noscaler_f01/logs
+resume_path: ''
+overrides:
+  model:
+    use_edge_stream_head: false
+    edge_head_type: pi_grouped_property
+    edge_decoder_hidden_dim: 128
+    edge_oper_dim: 3
+    stream_target_dim: 14
+    edge_struct_dim: 3
+    edge_head_dropout: 0.1
+    cond_head_output_dim: 2
+    frac_head_output_dim: 7
+    mass_head_output_dim: 3
+    property_head_hidden_dim: 128
+    property_head_num_layers: 2
+    species_order:
+    - H2O
+    - H2
+    - CH4
+    - CO2
+    - CO
+    - O2
+    - N2
+    use_edge_decoder: true
+    fraction_activation: softmax
+    fraction_temperature: 0.5
+  data:
+    task_mode: edge_all
+    edge_struct_include_join_flags: false
+    normalize_y_edge: false
+    normalize_targets: false
+    train_data_path: data/datasets_v3/process_main_merged.csv
+    val_data_path: data/datasets_v3/process_main_merged.csv
+    test_data_path: data/datasets_v3/process_main_merged.csv
+    train_split_manifest_path: data/splits/all_processes_full100k_outer5_grouped/fold_01/train.csv
+    val_split_manifest_path: data/splits/all_processes_full100k_outer5_grouped/fold_01/val.csv
+    test_split_manifest_path: data/splits/all_processes_full100k_outer5_grouped/fold_01/test.csv
+    edge_all_processes:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    edge_all_split_mode: seen_process
+    edge_target_columns_mode: explicit
+    edge_target_columns:
+    - Temp
+    - Pres
+    - Vol_Flow
+    - Mole_Flow
+    - Mass_Flow
+    - Frac_H2O
+    - Frac_H2
+    - Frac_CH4
+    - Frac_CO2
+    - Frac_CO
+    - Frac_O2
+    - Frac_N2
+    - Enthalpy
+    - Density
+    use_rho_target: true
+    use_h_target: true
+    use_volume_flow_target: false
+    use_enthalpy_flow_target: false
+    species_order:
+    - H2O
+    - H2
+    - CH4
+    - CO2
+    - CO
+    - O2
+    - N2
+    molecular_weight:
+      H2: 2.01588
+      CH4: 16.04246
+      CO2: 44.0095
+      CO: 28.0101
+      O2: 31.9988
+      N2: 28.0134
+  train:
+    backward_mode: sample_hybrid_target_edge_step_pi
+    batch_size: 1
+    shuffle_edges_each_batch: true
+    scheduler_step_unit: epoch
+    gradient_accumulation_steps: 1
+    sample_hybrid_target_edge_step_pi:
+      enabled: true
+      non_target_reduction: edge_group_macro_mean
+      target_update_order: canonical_edge_id
+      use_existing_target_edge_weight: false
+      require_batch_size_one: true
+      allow_duplicate_canonical_edge_rows: true
+      log_sample_update_details: false
+      collect_update_diagnostics: false
+    debug_edge_step_pi: false
+    max_train_batches: 0
+    edge_weight_default: 1.0
+    edge_weight_target_edge: 40.0
+    use_total_loss_in_edge_step_pi: false
+    use_all_edge_r2_loss_in_edge_step_pi: false
+    use_primary_frac_loss_in_edge_step_pi: false
+    use_pinn_loss: true
+    lambda_main: 8.0e-06
+    lambda_rho: 0.075
+    lambda_h: 6.0
+    lambda_energy: 0.0
+    compute_node_balance_diagnostics: true
+    use_rho_loss: true
+    use_h_loss: true
+    use_volume_loss: false
+    use_enthalpy_flow_loss: false
+    use_node_mass_balance_loss: true
+    lambda_node_mass: 15.0
+    node_mass_balance_relative: true
+    use_node_component_balance_loss: true
+    lambda_node_component: 1.5e-07
+    node_component_balance_relative: true
+    use_node_atom_balance_loss: true
+    lambda_node_atom: 0.00015
+    node_atom_balance_relative: true
+    use_node_energy_balance_loss: true
+    lambda_node_energy: 11.3
+    node_energy_balance_relative: true
+    node_energy_use_q: true
+    node_energy_valid_unit_types: []
+    node_energy_exclude_unit_types: []
+    node_balance_pi:
+      enabled: true
+      zero_flow:
+        threshold: 1.0e-08
+        mask_fraction_loss: true
+        mask_fraction_metric: true
+        zero_flow_nan_enthalpy_as_zero: true
+      mass:
+        enabled: true
+        weight: 15.0
+        epsilon: 1.0e-08
+        loss_type: huber
+        scale_floor: 0.0001
+        huber_delta: 0.001
+        prediction_filter:
+          max_abs_residual: 5.0
+      component:
+        enabled: true
+        weight: 1.5e-07
+        epsilon: 1.0e-08
+        component_flow_threshold: 1.0e-08
+        loss_type: huber
+        huber_delta: 0.001
+        nonreactive_only: true
+        scale_floor: 0.0001
+      atom:
+        enabled: true
+        weight: 0.00015
+        epsilon: 1.0e-08
+        loss_type: huber
+        huber_delta: 0.001
+        reactive_only: true
+        scale_floor: 0.0001
+        atom_flow_threshold: 1.0e-08
+      energy:
+        enabled: true
+        weight: 11.3
+        epsilon: 1.0e-08
+        loss_type: huber
+        huber_delta: 0.001
+        use_process_main_qw: true
+        signed_work_input: true
+        hx_total_balance_only: true
+        use_q_hx: false
+        consistency_filter:
+          enabled: true
+          max_true_normalized_residual: 0.01
+          mode: exclude
+        scale_floor: 0.001
+        prediction_filter:
+          max_abs_residual: 5.0
+      diagnostics:
+        enabled: false
+    use_atom_balance_loss: false
+    use_energy_balance_loss: false
+    pinn_loss_reduction: mean
+    eps: 1.0e-08
+    h_basis: mass_specific
+    molecular_weight_unit: g_per_mol
+    learning_rate: 0.0001
+    gradient_clip_norm: 0.5
+    epochs: 30
+    terminal_log_verbosity: compact
+    val_interval: 1
+    val_random_sample_size: 1000
+    val_random_sample_seed: 260716
+    val_random_sample_each_epoch: true
+    monitor_metric: val_target_mean_r2
+    monitor_mode: max
+    pi_main_loss_type: smooth_l1
+    pi_fraction_loss_type: log
+    pi_fraction_log_eps: 1.0e-06
+    pi_fraction_log_loss_weight: 0.75
+    pi_runtime_physical_checks: false
+    pi_normalize_fraction_loss: false
+    pi_fraction_loss_std_min: 0.001
+    use_zero_flow_fraction_mask: true
+    zero_flow_fraction_mask_eps: 1.0e-08
+    use_log1p_mass_flow_loss: false
+    pi_mass_flow_output_space: log1p
+    mass_flow_transform: scaled_log
+    mass_flow_log_scale: 2.0
+    mass_flow_log_eps: 1.0e-08
+    mass_flow_log_loss_weight: 1.0
+    rare_positive_sampler:
+      enabled: false
+    rare_target_edge_augmentation:
+      enabled: false
+    epoch_sampler:
+      enabled: true
+      epoch_fraction: 0.02
+      balance_processes: true
+      unique_within_epoch: true
+      replacement_for_rare_buckets: true
+      replacement_for_uniform: false
+      max_repeat_per_sample_per_epoch: 1
+      sampler_seed: 260716
+      log_sample_selection_counts: true
+      mixture:
+        uniform: 0.15
+        sparse_positive: 0.35
+        quantile_balance: 0.15
+        mass_flow_tail: 0.1
+        hard_target_edges: 0.25
+      sparse_positive:
+        properties:
+        - Frac_CH4
+        - Frac_CO
+        - Frac_CO2
+        - Frac_H2
+        zero_threshold: 1.0e-08
+        positive_quantiles:
+        - 0.0
+        - 0.5
+        - 0.9
+        - 1.0
+      quantile_balance:
+        properties:
+        - Temp
+        - Pres
+        - Mass_Flow
+        - Frac_H2O
+        - Frac_H2
+        - Frac_CH4
+        - Frac_CO2
+        - Frac_CO
+        - Frac_O2
+        - Frac_N2
+        quantiles:
+        - 0.0
+        - 0.2
+        - 0.4
+        - 0.6
+        - 0.8
+        - 1.0
+      mass_flow_tail:
+        property: Mass_Flow
+        quantile_scope: process
+        quantiles:
+        - 0.8
+        - 0.95
+        - 0.99
+        - 1.0
+      hard_target_edges:
+        enabled: true
+        rules:
+        - name: weak_target_frac_ch4_edges
+          property: Frac_CH4
+          min_value: 0.001
+          max_value: 1.0
+          edge_ids:
+          - P07_E017
+          - P10_E027
+          - P06_E023
+          - P04_E020
+          - P03_E023
+          - P07_E016
+          - P08_E016
+          - P06_E021
+          - P05_E015
+          - P08_E014
+        - name: weak_target_frac_co_edges
+          property: Frac_CO
+          min_value: 0.001
+          max_value: 1.0
+          edge_ids:
+          - P07_E016
+          - P04_E020
+          - P08_E016
+          - P06_E023
+          - P03_E014
+          - P05_E016
+          - P01_E021
+          - P05_E014
+          - P02_E014
+          - P10_E015
+          - P09_E022
+        - name: weak_target_frac_co2_edges
+          property: Frac_CO2
+          min_value: 0.001
+          max_value: 1.0
+          edge_ids:
+          - P07_E016
+          - P08_E016
+          - P07_E017
+          - P06_E023
+          - P10_E027
+          - P04_E020
+          - P05_E016
+          - P03_E014
+          - P10_E015
+          - P08_E014
+          - P01_E021
+          - P09_E022
+    target_edge_augmentation:
+      enabled: false
+      max_augmented_items: 0
+      max_augmented_ratio: 0.6
+      seed: 42
+      target_properties:
+      - Frac_CO
+      - Frac_CH4
+      - Frac_CO2
+      - Frac_H2
+      - Mass_Flow
+      selection_mode: adaptive_bins
+      repeat_cap_per_original: 20
+      mass_flow_priority_edges:
+        P04_E009: 0.28
+        P06_E013: 0.28
+        P09_E022: 0.17
+        P01_E015: 0.17
+        P10_E015: 0.1
+      adaptive_bins:
+      - name: target_frac_co_005_02
+        scope: target
+        property: Frac_CO
+        bin: 0.05~0.2
+        min_value: 0.05
+        max_value: 0.2
+        quota: 4200
+        spillover_to: target_frac_co_001_005
+        repeat_cap_per_original: 20
+      - name: target_frac_co_001_005
+        scope: target
+        property: Frac_CO
+        bin: 0.01~0.05
+        min_value: 0.01
+        max_value: 0.05
+        quota: 3300
+        repeat_cap_per_original: 20
+      - name: target_frac_co_hard_edges
+        scope: target
+        property: Frac_CO
+        bin: hard-positive-edge
+        min_value: 0.001
+        max_value: 1.0
+        quota: 1500
+        edge_ids:
+        - P05_E016
+        - P06_E023
+        - P03_E014
+        repeat_cap_per_original: 30
+      - name: target_frac_ch4_005_02
+        scope: target
+        property: Frac_CH4
+        bin: 0.05~0.2
+        min_value: 0.05
+        max_value: 0.2
+        quota: 2550
+        spillover_to: target_frac_ch4_001_005
+        repeat_cap_per_original: 20
+      - name: target_frac_ch4_001_005
+        scope: target
+        property: Frac_CH4
+        bin: 0.01~0.05
+        min_value: 0.01
+        max_value: 0.05
+        quota: 1650
+        repeat_cap_per_original: 20
+      - name: target_frac_ch4_hard_edges
+        scope: target
+        property: Frac_CH4
+        bin: hard-positive-edge
+        min_value: 0.001
+        max_value: 1.0
+        quota: 450
+        edge_ids:
+        - P07_E016
+        - P08_E016
+        repeat_cap_per_original: 15
+      - name: target_frac_ch4_02_08
+        scope: target
+        property: Frac_CH4
+        bin: 0.2~0.8
+        min_value: 0.2
+        max_value: 0.8
+        quota: 150
+        repeat_cap_per_original: 5
+      - name: target_frac_co2_02_08
+        scope: target
+        property: Frac_CO2
+        bin: 0.2~0.8
+        min_value: 0.2
+        max_value: 0.8
+        quota: 2850
+        spillover_to: target_frac_co2_005_02
+        repeat_cap_per_original: 20
+      - name: target_frac_co2_005_02
+        scope: target
+        property: Frac_CO2
+        bin: 0.05~0.2
+        min_value: 0.05
+        max_value: 0.2
+        quota: 900
+        repeat_cap_per_original: 20
+      - name: target_frac_co2_hard_edges
+        scope: target
+        property: Frac_CO2
+        bin: hard-positive-edge
+        min_value: 0.001
+        max_value: 1.0
+        quota: 750
+        edge_ids:
+        - P08_E016
+        - P06_E023
+        - P05_E016
+        repeat_cap_per_original: 20
+      - name: h2o_negative_ch4_lt_1e3
+        scope: target
+        property: Frac_CH4
+        bin: H2O negative <1e-3
+        min_value: 0.0
+        max_value: 0.001
+        quota: 1950
+        match_mode: negative
+        stream_contains:
+        - H2O
+        repeat_cap_per_original: 20
+      - name: h2o_negative_co2_lt_1e3
+        scope: target
+        property: Frac_CO2
+        bin: H2O negative <1e-3
+        min_value: 0.0
+        max_value: 0.001
+        quota: 2250
+        match_mode: negative
+        stream_contains:
+        - H2O
+        repeat_cap_per_original: 20
+      - name: h2o_negative_h2_lt_1e3
+        scope: target
+        property: Frac_H2
+        bin: H2O negative <1e-3
+        min_value: 0.0
+        max_value: 0.001
+        quota: 2400
+        match_mode: negative
+        stream_contains:
+        - H2O
+        repeat_cap_per_original: 20
+      - name: zero_contrast_ch4_lt_1e3
+        scope: target
+        property: Frac_CH4
+        bin: generic zero <1e-3
+        min_value: 0.0
+        max_value: 0.001
+        quota: 300
+        match_mode: negative
+        repeat_cap_per_original: 20
+      - name: zero_contrast_co_lt_1e3
+        scope: target
+        property: Frac_CO
+        bin: generic zero <1e-3
+        min_value: 0.0
+        max_value: 0.001
+        quota: 300
+        match_mode: negative
+        repeat_cap_per_original: 20
+      - name: zero_contrast_co2_lt_1e3
+        scope: target
+        property: Frac_CO2
+        bin: generic zero <1e-3
+        min_value: 0.0
+        max_value: 0.001
+        quota: 300
+        match_mode: negative
+        repeat_cap_per_original: 20
+      - name: target_mass_q99_100
+        scope: target
+        property: Mass_Flow
+        bin: 99~100%
+        quantile_low: 0.99
+        quantile_high: 1.0
+        quota: 4200
+        repeat_cap_per_original: 20
+      - name: target_mass_q95_99
+        scope: target
+        property: Mass_Flow
+        bin: 95~99%
+        quantile_low: 0.95
+        quantile_high: 0.99
+        quota: 3900
+        repeat_cap_per_original: 20
+      - name: target_mass_q90_95
+        scope: target
+        property: Mass_Flow
+        bin: 90~95%
+        quantile_low: 0.9
+        quantile_high: 0.95
+        quota: 1350
+        repeat_cap_per_original: 20
+      - name: all_mass_q95_100
+        scope: all
+        property: Mass_Flow
+        bin: 95~100%
+        quantile_low: 0.95
+        quantile_high: 1.0
+        quota: 750
+        repeat_cap_per_original: 20
+      keep_original_items: true
+      apply_to:
+      - train
+    loss_type_edge_all: smooth_l1
+    edge_all_use_y_edge_mask: true
+    use_edge_all_loss: true
+    edge_all_print_first_batch: false
+    edge_all_assert_no_leakage: false
+    edge_all_export_predictions: false
+    lambda_volume: 0.0
+    lambda_enthalpy_flow: 0.0
+    lambda_atom: 0.0
+    target_metric_min_count: 1
+    target_metric_sst_threshold: 1.0e-06
+    target_metric_r2_floor: 0.1
+    metric_relevance_enabled: false
+    save_oracle_diagnostic_metrics: true
+    oracle_threshold_sweep_enabled: true
+    oracle_calibration_enabled: true
+    oracle_fraction_postprocess_enabled: true
+    oracle_min_samples: 100
+    oracle_threshold_candidates:
+    - 0.0
+    - 1.0e-06
+    - 0.0001
+    - 0.001
+    - 0.005
+    - 0.01
+    - 0.02
+    - 0.05
+    - 0.1
+    - 0.2
+    - 0.3
+    - 0.5
+    - 0.6
+    oracle_quantile_candidates:
+    - 0.0
+    - 0.1
+    - 0.2
+    - 0.3
+    - 0.5
+    - 0.7
+    - 0.9
+    save_diagnostic_display_metrics: true
+    diagnostic_corr2_enabled: true
+    diagnostic_calibrated_r2_enabled: true
+    diagnostic_transformed_r2_enabled: true
+    diagnostic_fraction_postprocess_enabled: true
+    diagnostic_min_samples: 100
+    early_stopping_patience: 5
+metadata:
+  pinn_weighting_note: 'target contribution: no-y-edge-scaler variant uses physical-scale
+    edge targets, so lambda_main is downscaled to keep PINN near 10 percent
+    instead of letting raw edge units dominate.'
+  pinn_stability_note: Adjusted after epoch-2 logs showed intermittent nonfinite grad_norm
+    from extreme node mass/energy residuals; keeps all node PINN terms active with
+    Huber+scale floors.

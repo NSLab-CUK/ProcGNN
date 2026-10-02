@@ -1,0 +1,11 @@
+{
+  "data": {
+    "train_data_path": "data/datasets_single/Process1/process_main_merged.csv",
+    "val_data_path": "data/datasets_single/Process1/val.csv",
+    "test_data_path": "data/datasets_single/Process1/test.csv"
+  },
+  "train": {
+    "num_workers": 0,
+    "pin_memory": false
+  }
+}

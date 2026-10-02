@@ -1,0 +1,115 @@
+﻿# Process 08 grouped-property edge_all experiment.
+experiment_name: process_surrogate_edge_all_v3_grouped_head_p08
+seed: 42
+device: cuda
+eval_only: false
+model_config: configs/model/process_encoder.yaml
+train_config: configs/train/process_train.yaml
+data_config: configs/data/process_data.yaml
+output_dir: outputs/process_surrogate_edge_all_v3_grouped_head/Process08
+save_dir: outputs/process_surrogate_edge_all_v3_grouped_head/Process08/checkpoints
+log_dir: outputs/process_surrogate_edge_all_v3_grouped_head/Process08/logs
+resume_path: ""
+overrides:
+  model:
+    use_edge_stream_head: false
+    use_edge_decoder: true
+    edge_head_type: grouped_property
+    edge_decoder_hidden_dim: 256
+    edge_oper_dim: 3
+    stream_target_dim: 12
+    edge_struct_dim: 3
+    edge_head_dropout: 0.1
+    edge_head_shared_dims: [512, 512]
+    edge_head_frac_dims: [384, 192]
+    edge_head_flow_dims: [512, 384, 192]
+    edge_head_cond_dims: [256, 128]
+  data:
+    task_mode: edge_all
+    edge_struct_include_join_flags: false
+    normalize_y_edge: true
+    normalize_targets: false
+    train_data_path: data/datasets_v3/train.csv
+    val_data_path: data/datasets_v3/val.csv
+    test_data_path: data/datasets_v3/test.csv
+    edge_all_processes: [8]
+    edge_all_split_mode: seen_process
+  train:
+    learning_rate: 0.00012
+    weight_decay: 0.00004
+    scheduler_t_max: 100
+    gradient_clip_norm: 0.4
+    epochs: 100
+    val_interval: 1
+    monitor_metric: val_target_stream_feature_macro_r2
+    monitor_mode: min
+    loss_type_edge_all: smooth_l1
+    edge_all_use_y_edge_mask: true
+    use_edge_all_loss: true
+    use_target_feature_loss: false
+    use_target_row_frac_loss: true
+    use_target_row_amount_loss: false
+    lambda_target_feature: 1.0
+    lambda_target_row_frac: 1.0
+    lambda_target_row_amount: 0.0
+    primary_frac_loss_weight: 5.0
+    all_edge_r2_loss_weight: 0.05
+    all_edge_r2_min_count: 8
+    all_edge_r2_sst_threshold: 1.0e-3
+    all_edge_r2_loss_cap: 5.0
+    primary_frac_r2_min_count: 8
+    primary_frac_r2_sst_threshold: 1.0e-3
+    primary_frac_r2_loss_cap: 5.0
+    target_feature_loss_scope: target_stream_edge_weighted_edge_all
+    use_target_stream_loss_weighting: true
+    target_stream_loss_weight: 5.0
+    target_stream_weighting_mode: unique_target_stream_edge_by_process
+    target_stream_weight_conflict_policy: max
+    allow_yaml_only_target_streams: false
+    target_incident_exclude_virtual_nodes: true
+    target_incident_virtual_node_names: [V_INPUT, V_OUTPUT]
+    target_incident_include_target_edge: true
+    target_incident_use_answer_edge_weight: false
+    target_feature_loss_space: normalized
+    target_feature_loss_balancing: process_target_balanced
+    answer_edge_weight: 1.0
+    answer_edge_weight_h2: 1.0
+    answer_edge_weight_co2: 1.0
+    answer_edge_weight_h2o: 1.0
+    target_weight_by_id:
+      P08_T001: 1.6
+      P08_T002: 2.4
+      P08_T003: 1.0
+    target_stream_loss_weights:
+      - target_id: P08_T001
+        canonical_answer_edge_id: P08_E015
+        target_stream: OUT_PROD
+        target_species: H2
+        target_feature: "PROD_H2_Mole"
+        weight: 8
+
+      - target_id: P08_T002
+        canonical_answer_edge_id: P08_E016
+        target_stream: OUT_CO2
+        target_species: CO2
+        target_feature: "12_CO2_Mole"
+        weight: 12
+
+      - target_id: P08_T003
+        canonical_answer_edge_id: P08_E014
+        target_stream: OUT_H2O
+        target_species: H2O
+        target_feature: "RESTEAM_H2O_Mole"
+        weight: 5
+    use_v4_target_edge_weighting: true
+    v4_target_weighting_mode: target_row
+    use_v4_target_row_loss: false
+    v4_target_row_loss_weight: 0.0
+    early_stopping_patience: 10
+    use_legacy_answer_weighting: false
+    edge_all_print_first_batch: true
+    edge_all_assert_no_leakage: true
+    edge_all_export_predictions: true
+
+
+

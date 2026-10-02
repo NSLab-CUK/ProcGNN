@@ -1,0 +1,290 @@
+﻿experiment_name: s1_targetedge30
+seed: 42
+device: cuda
+eval_only: false
+model_config: configs/model/process_encoder.yaml
+train_config: configs/train/process_train.yaml
+data_config: configs/data/process_data.yaml
+output_dir: outputs/supw_s1_targetedge30
+save_dir: outputs/supw_s1_targetedge30/checkpoints
+log_dir: outputs/supw_s1_targetedge30/logs
+resume_path: ''
+overrides:
+  model:
+    use_edge_stream_head: false
+    edge_head_type: pi_grouped_property
+    edge_decoder_hidden_dim: 128
+    edge_oper_dim: 3
+    stream_target_dim: 14
+    edge_struct_dim: 3
+    edge_head_dropout: 0.1
+    cond_head_output_dim: 2
+    frac_head_output_dim: 7
+    mass_head_output_dim: 3
+    property_head_hidden_dim: 128
+    property_head_num_layers: 2
+    species_order:
+    - H2O
+    - H2
+    - CH4
+    - CO2
+    - CO
+    - O2
+    - N2
+    use_edge_decoder: true
+    fraction_activation: softmax
+    fraction_temperature: 0.5
+  data:
+    task_mode: edge_all
+    edge_struct_include_join_flags: false
+    normalize_y_edge: true
+    normalize_targets: false
+    train_data_path: data/datasets_v3/process_main_merged_all_processes_10pct.csv
+    val_data_path: data/datasets_v3/process_main_merged_all_processes_10pct.csv
+    test_data_path: data/datasets_v3/process_main_merged_all_processes_10pct.csv
+    train_split_manifest_path: data/splits/all_processes_10pct/All/fold_01/train.csv
+    val_split_manifest_path: data/splits/all_processes_10pct/All/fold_01/val.csv
+    test_split_manifest_path: data/splits/all_processes_10pct/All/fold_01/test.csv
+    edge_all_processes:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    edge_all_split_mode: seen_process
+    edge_target_columns_mode: explicit
+    edge_target_columns:
+    - Temp
+    - Pres
+    - Vol_Flow
+    - Mole_Flow
+    - Mass_Flow
+    - Frac_H2O
+    - Frac_H2
+    - Frac_CH4
+    - Frac_CO2
+    - Frac_CO
+    - Frac_O2
+    - Frac_N2
+    - Enthalpy
+    - Density
+    use_rho_target: true
+    use_h_target: true
+    use_volume_flow_target: false
+    use_enthalpy_flow_target: false
+    species_order:
+    - H2O
+    - H2
+    - CH4
+    - CO2
+    - CO
+    - O2
+    - N2
+    molecular_weight:
+      H2: 2.01588
+      CH4: 16.04246
+      CO2: 44.0095
+      CO: 28.0101
+      O2: 31.9988
+      N2: 28.0134
+  train:
+    backward_mode: edge_step_pi
+    shuffle_edges_each_batch: true
+    scheduler_step_unit: epoch
+    gradient_accumulation_steps: 1
+    debug_edge_step_pi: false
+    max_train_batches: 0
+    edge_weight_default: 1.0
+    edge_weight_target_edge: 30.0
+    use_total_loss_in_edge_step_pi: false
+    use_all_edge_r2_loss_in_edge_step_pi: false
+    use_primary_frac_loss_in_edge_step_pi: false
+    use_pinn_loss: true
+    lambda_main: 1.0
+    lambda_rho: 1.0e-05
+    lambda_h: 1.0e-12
+    lambda_energy: 0.0
+    use_rho_loss: true
+    use_h_loss: true
+    use_volume_loss: false
+    use_enthalpy_flow_loss: false
+    use_atom_balance_loss: false
+    use_energy_balance_loss: false
+    pinn_loss_reduction: mean
+    eps: 1.0e-08
+    h_basis: mass_specific
+    molecular_weight_unit: g_per_mol
+    learning_rate: 0.0001
+    gradient_clip_norm: 0.5
+    epochs: 30
+    val_interval: 1
+    monitor_metric: val_target_mean_r2
+    monitor_mode: max
+    pi_main_loss_type: smooth_l1
+    pi_fraction_loss_type: clr
+    pi_fraction_clr_eps: 1.0e-06
+    pi_fraction_clr_loss_weight: 0.5
+    pi_normalize_fraction_loss: false
+    pi_fraction_loss_std_min: 0.001
+    use_zero_flow_fraction_mask: true
+    zero_flow_fraction_mask_eps: 1.0e-08
+    use_log1p_mass_flow_loss: false
+    pi_mass_flow_output_space: log1p
+    mass_flow_log_loss_weight: 1.0
+    rare_positive_sampler:
+      enabled: false
+    rare_target_edge_augmentation:
+      enabled: false
+    target_edge_augmentation:
+      enabled: true
+      max_augmented_items: 12000
+      seed: 42
+      target_properties:
+      - Frac_CO
+      - Frac_CH4
+      - Frac_CO2
+      - Mass_Flow
+      selection_mode: adaptive_bins
+      repeat_cap_per_original: 20
+      mass_flow_priority_edges:
+        P04_E009: 0.28
+        P06_E013: 0.28
+        P09_E022: 0.17
+        P01_E015: 0.17
+        P10_E015: 0.1
+      adaptive_bins:
+      - name: target_frac_co_005_02
+        scope: target
+        property: Frac_CO
+        bin: 0.05~0.2
+        min_value: 0.05
+        max_value: 0.2
+        quota: 1600
+      - name: target_frac_co_001_005
+        scope: target
+        property: Frac_CO
+        bin: 0.01~0.05
+        min_value: 0.01
+        max_value: 0.05
+        quota: 1300
+      - name: target_frac_ch4_005_02
+        scope: target
+        property: Frac_CH4
+        bin: 0.05~0.2
+        min_value: 0.05
+        max_value: 0.2
+        quota: 1800
+      - name: target_frac_ch4_001_005
+        scope: target
+        property: Frac_CH4
+        bin: 0.01~0.05
+        min_value: 0.01
+        max_value: 0.05
+        quota: 1000
+      - name: target_frac_ch4_02_08
+        scope: target
+        property: Frac_CH4
+        bin: 0.2~0.8
+        min_value: 0.2
+        max_value: 0.8
+        quota: 200
+        spillover_to: target_frac_ch4_005_02
+      - name: target_frac_co2_005_02
+        scope: target
+        property: Frac_CO2
+        bin: 0.05~0.2
+        min_value: 0.05
+        max_value: 0.2
+        quota: 1300
+      - name: target_frac_co2_02_08
+        scope: target
+        property: Frac_CO2
+        bin: 0.2~0.8
+        min_value: 0.2
+        max_value: 0.8
+        quota: 1000
+      - name: target_mass_q99_100
+        scope: target
+        property: Mass_Flow
+        bin: 99~100%
+        quantile_low: 0.99
+        quantile_high: 1.0
+        quota: 1300
+      - name: target_mass_q95_99
+        scope: target
+        property: Mass_Flow
+        bin: 95~99%
+        quantile_low: 0.95
+        quantile_high: 0.99
+        quota: 1200
+      - name: target_mass_q90_95
+        scope: target
+        property: Mass_Flow
+        bin: 90~95%
+        quantile_low: 0.9
+        quantile_high: 0.95
+        quota: 700
+      - name: all_mass_q95_100
+        scope: all
+        property: Mass_Flow
+        bin: 95~100%
+        quantile_low: 0.95
+        quantile_high: 1.0
+        quota: 600
+      keep_original_items: true
+      apply_to:
+      - train
+    loss_type_edge_all: smooth_l1
+    edge_all_use_y_edge_mask: true
+    use_edge_all_loss: true
+    edge_all_print_first_batch: false
+    edge_all_assert_no_leakage: false
+    edge_all_export_predictions: false
+    lambda_volume: 0.0
+    lambda_enthalpy_flow: 0.0
+    lambda_atom: 0.0
+    target_metric_min_count: 1
+    target_metric_sst_threshold: 1.0e-06
+    target_metric_r2_floor: 0.1
+    save_diagnostic_display_metrics: true
+    diagnostic_corr2_enabled: true
+    diagnostic_calibrated_r2_enabled: true
+    diagnostic_transformed_r2_enabled: true
+    diagnostic_fraction_postprocess_enabled: true
+    diagnostic_min_samples: 100
+    pi_fraction_component_penalty:
+      enabled: true
+      rampup:
+        enabled: true
+        fraction: 0.2
+      loss_type: smooth_l1
+      eps: 1.0e-08
+      co_positive:
+        enabled: true
+        lambda: 2.0
+        threshold: 0.01
+        temperature: 0.005
+      soft_zero_fp:
+        enabled: true
+        eps_true: 0.001
+        ch4_lambda: 0.5
+        co2_lambda: 0.5
+        h2_lambda: 0.15
+        ch4_margin: 0.005
+        co2_margin: 0.005
+        h2_margin: 0.01
+      co2_positive:
+        enabled: true
+        lambda: 0.5
+        alpha: 2.0
+        scale: 0.2
+      diagnostics:
+        enabled: true
+        save_eval_csv: true
+
+

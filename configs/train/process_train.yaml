@@ -1,0 +1,198 @@
+# ==========================================
+# 공정 Surrogate ?�습 ?�정
+# ==========================================
+
+# --- 기본 최적???�정 ---
+epochs: 200                    # ?�체 ?�습 epoch ?? ?�션: 50, 100, 200, 300
+batch_size: 16                 # 미니배치 ?�기(그래????. ?�션: 4, 8, 16, 32
+learning_rate: 0.00045        # ?�티마이? ?�습�? ?�션: 1e-4, 5e-4, 1e-3
+weight_decay: 0.00001          # L2 �중치 감쇠. ?�션: 0.0, 1e-5, 1e-4, 1e-3
+optimizer: adamw              # ?�티마이? 종류. ?�션: adam, adamw
+
+# --- Backward mode ---
+backward_mode: batch_total
+shuffle_edges_each_batch: true
+scheduler_step_unit: epoch
+gradient_accumulation_steps: 1
+debug_edge_step: false
+debug_edge_step_pi: false
+max_train_batches: 0
+edge_weight_default: 1.0
+edge_weight_target_edge: 5.0
+use_all_edge_r2_loss_in_edge_step: false
+use_total_loss_in_edge_step_pi: false
+use_all_edge_r2_loss_in_edge_step_pi: false
+use_primary_frac_loss_in_edge_step_pi: false
+use_pinn_loss: true
+pi_fraction_loss_type: legacy
+pi_normalize_fraction_loss: false
+pi_fraction_loss_std_min: 1.0e-3
+pi_fraction_clr_eps: 1.0e-6
+pi_fraction_clr_loss_weight: 1.0
+pi_fraction_log_eps: 1.0e-6
+pi_fraction_log_loss_weight: 0.5
+pi_fraction_closure_loss_weight: 0.0
+use_zero_flow_fraction_mask: false
+zero_flow_fraction_mask_eps: 1.0e-8
+use_log1p_mass_flow_loss: false
+log1p_mass_flow_loss_std_min: 1.0e-6
+pi_mass_flow_output_space: raw_z
+mass_flow_transform: log1p
+mass_flow_log_tau: 1.0
+mass_flow_log_scale: 1.0
+mass_flow_log_eps: 1.0e-8
+mass_flow_log_loss_weight: 1.0
+save_target_edge_actual_vs_pred_plots: false
+lambda_main: 1.0
+lambda_rho: 0.01
+lambda_h: 0.01
+lambda_volume: 0.0
+lambda_enthalpy_flow: 0.0
+lambda_atom: 0.0
+lambda_energy: 0.0
+use_node_mass_balance_loss: false
+lambda_node_mass: 0.0
+node_mass_balance_relative: true
+use_rho_loss: true
+use_h_loss: true
+use_volume_loss: false
+use_enthalpy_flow_loss: false
+use_atom_balance_loss: false
+use_energy_balance_loss: false
+pinn_loss_reduction: mean
+target_metric_min_count: 1
+target_metric_sst_threshold: 1.0e-6
+target_metric_r2_floor: 0.1
+eps: 1.0e-8
+h_basis: mass_specific
+molecular_weight_unit: g_per_mol
+mw_unit_scale: 1.0
+volume_unit_scale: 1000.0
+volume_loss_normalized: true
+
+# --- ?�습�??��?줄러 ---
+scheduler: cosine              # ?��?줄러 종류. ?�션: none, cosine, step, plateau
+scheduler_t_max: 200           # 코사??주기 길이(보통 epochs? ?�일). cosine ?�용
+scheduler_eta_min: 1.0e-6      # 코사???�점 최소 ?�습�? cosine ?�용
+scheduler_step_size: 50        # ?�습�?감소 epoch 간격. step ?�용
+scheduler_gamma: 0.1           # ?�습�?감소 배율. step ?�용
+scheduler_patience: 10         # 개선 ?�을 ???�?epoch ?? plateau ?�용
+scheduler_factor: 0.5          # plateau ???�습�?�?배율. plateau ?�용
+scheduler_min_lr: 1.0e-6       # ?�습�??�한?? plateau ?�용
+
+# --- ?�실 / ?�규??(?�로?�트 ?�일: smooth_l1 / Huber) ---
+gradient_clip_norm: 1.0        # 그래?�언???�립 ?�계�?0?�면 비활??. ?�션: 0.0, 1.0, 5.0, 10.0
+loss_type_target: smooth_l1    # ?�션: mse, l1, smooth_l1, percentage
+loss_type_tailgas: smooth_l1
+loss_type_decoder: smooth_l1
+loss_type_aux: smooth_l1
+# v3 edge-stream head: set edge_stream_loss_weight > 0 and model.use_edge_stream_head: true
+loss_type_edge_stream: smooth_l1
+edge_stream_loss_weight: 0.0
+loss_type_edge_all: smooth_l1  # edge_all: ?�션 smooth_l1, l1, mse
+
+# edge_all v4 메인 ?�?H2/CO2/H2O) ?��? ?�처 loss ��?(required_properties???�용)
+answer_edge_weight: 5.0
+answer_edge_weight_h2: 5.0
+answer_edge_weight_co2: 5.0
+answer_edge_weight_h2o: 5.0
+use_v4_target_edge_weighting: true
+v4_target_weighting_mode: target_row
+use_edge_all_loss: true
+use_target_feature_loss: true
+use_v4_target_row_loss: false
+v4_target_row_loss_weight: 0.1
+use_target_row_frac_loss: true
+use_target_row_amount_loss: false
+lambda_target_feature: 1.0
+lambda_target_row_frac: 1.0
+lambda_target_row_amount: 0.0
+primary_frac_loss_weight: 5.0
+all_edge_r2_loss_weight: 0.05
+all_edge_r2_min_count: 8
+all_edge_r2_sst_threshold: 1.0e-3
+all_edge_r2_loss_cap: 5.0
+target_feature_loss_scope: target_incident_edges  # target edge endpoints incident edges, all supervised features
+target_incident_exclude_virtual_nodes: true
+target_incident_virtual_node_names: [V_INPUT, V_OUTPUT]
+target_incident_include_target_edge: true
+target_incident_use_answer_edge_weight: false
+target_feature_loss_space: normalized
+target_feature_loss_balancing: process_target_balanced
+use_legacy_answer_weighting: false
+
+task_loss_weights:
+  target: 0.6
+  tailgas: 1.2
+  edge_stream: 1.0
+  power: 0.3
+  heat_duty: 0.3
+  flow: 0.3
+  hx_area: 0.3
+
+# --- 조기 종료 / 체크?�인???�책 ---
+early_stopping: true          # 조기 종료 ?�용 ?��?. ?�션: true, false
+early_stopping_patience: 30    # 개선 ?�을 ??중�?까�? ?�?epoch. ?�션: 10, 20, 30
+save_best_only: true           # 최고 ?�능 체크?�인?�만 ??? ?�션: true, false
+monitor_metric: val_eval_primary_frac_r2_by_process  # edge_all official: Primary Frac R² (val_r2 alias deprecated)
+monitor_mode: max            # �??최적??방향. ?�션: min, max (val_r2 ??max)
+
+# --- DataLoader ?�행 ?�정 ---
+num_workers: 8            # dataloader ?�커 ?�로?�스 ?? ?�션: 0, 2, 4, 8
+pin_memory: false              # CUDA ?�송???�한 host 메모�?pin ?��?. ?�션: true, false
+rare_positive_sampler:
+  enabled: false
+  components: [Frac_CH4, Frac_CO, Frac_CO2]
+  positive_threshold: 1.0e-4
+  max_weight: 10.0
+  mode: any_target_edge
+  replacement: true
+rare_target_edge_augmentation:
+  enabled: false
+  components: [Frac_CH4, Frac_CO2, Frac_CO]
+  positive_threshold: 1.0e-4
+  high_positive_thresholds:
+    Frac_CO2: 0.05
+  default_factor: 2
+  high_positive_factor: 3
+  max_augmented_ratio: 0.5
+  target_edges_only: true
+  seed: 42
+target_edge_augmentation:
+  enabled: false
+  max_augmented_items: 0
+  factor: 3
+  seed: 42
+  target_properties: [Frac_CO2, Frac_CH4, Frac_CO]
+  selection_mode: balanced_property_edge
+  property_quota:
+    Frac_CO2: 0
+    Frac_CH4: 0
+    Frac_CO: 0
+  max_per_target_edge: 150
+  min_positive_threshold:
+    Frac_CO2: 0.05
+    Frac_CH4: 0.02
+    Frac_CO: 0.01
+  keep_original_items: true
+  apply_to: [train]
+
+# --- ?��???/ 로그 ---
+mixed_precision: false         # AMP ?�합?��????�용 ?��?. ?�션: true, false
+log_interval: 10               # ?�습 로그 출력 step 간격. ?�션: 1, 10, 50
+val_interval: 1                # ��??�행 epoch 간격. ?�션: 1, 5
+debug_loss_threshold: 100.0    # ??�??�상 loss_total 배치�?debug/problem_batches.jsonl?????debug_top_batches_to_report: 5 # ?�작 ??분포 분석?�서 출력??high-variance batch ??debug_mode: false              # ?�이???�벨/metric ?�버�?출력 ?�성??debug_epochs: 1                # debug_mode?????�세 로그�?찍을 epoch ??debug_vector_batches: 3        # ??�?�?batch?�서 ?�제 �?벡터�?출력?��?
+debug_task_mode: all           # ?�션: all, target_only, tailgas_only
+tiny_overfit_samples: 0        # 0보다 ?�면 train subset만으�?tiny overfit sanity check
+max_nonfinite_train_batches_per_epoch: 0 # 0?�면 dataloader ?�기 기�? ?�동 ?�용�??�용
+recover_nonfinite_edge_all: true       # edge_all NaN/Inf 발생 ??epoch ?�작 weight�?복구?�고 LR????��
+nonfinite_recovery_lr_factor: 0.5      # 복구 ??learning rate multiplier
+nonfinite_recovery_min_lr: 1.0e-6      # 복구 ??learning rate ?�한
+
+
+
+
+
+
+
+

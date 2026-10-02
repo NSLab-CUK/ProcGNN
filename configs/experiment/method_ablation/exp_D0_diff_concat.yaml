@@ -1,0 +1,99 @@
+# Method ablation (one-factor): exp_D0_diff_concat
+# Group: differential
+# Changed vs baseline: (none)
+# Baseline-equivalent: same as exp_B0_baseline
+# Note: diff coupling comparison, not no-differential
+experiment_name: method_ablation_exp_D0_diff_concat
+seed: 42
+device: cuda
+eval_only: false
+model_config: configs/model/process_encoder.yaml
+train_config: configs/train/process_train.yaml
+data_config: configs/data/process_data.yaml
+output_dir: outputs/process_kfold_method_ablation/exp_D0_diff_concat
+save_dir: outputs/process_kfold_method_ablation/exp_D0_diff_concat/checkpoints
+log_dir: outputs/process_kfold_method_ablation/exp_D0_diff_concat/logs
+resume_path: ''
+overrides:
+  model:
+    use_edge_stream_head: false
+    use_edge_decoder: true
+    edge_decoder_hidden_dim: 128
+    stream_target_dim: 12
+    edge_struct_dim: 5
+    hidden_dim: 512
+    num_layers: 5
+    attn_hidden_dim: 512
+    role_emb_dim: 96
+    unit_emb_dim: 64
+    use_hx_role_embedding: false
+    input_mlp_layers: 2
+    diff_mlp_layers: 2
+    update_mlp_layers: 2
+    final_mlp_layers: 2
+    diff_mode: concat
+    fusion_mode: concat
+    global_pool: concat_set2set
+    use_edge_features: true
+    initial_residual_mode: per_layer
+    initial_residual_alpha: 0.05
+    layer_residual_mode: interp
+    layer_residual_alpha: 0.5
+    layer_residual_norm: false
+    use_final_projection: true
+  data:
+    task_mode: edge_all
+    normalize_y_edge: true
+    normalize_targets: false
+    train_data_path: data/datasets_v3/train.csv
+    val_data_path: data/datasets_v3/val.csv
+    test_data_path: data/datasets_v3/test.csv
+    edge_all_processes:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    edge_all_split_mode: seen_process
+  train:
+    val_interval: 1
+    loss_type_edge_all: smooth_l1
+    answer_edge_weight: 5.0
+    answer_edge_weight_h2: 5.0
+    answer_edge_weight_co2: 5.0
+    answer_edge_weight_h2o: 5.0
+    edge_all_print_first_batch: true
+    edge_all_assert_no_leakage: true
+edge_all:
+  data:
+    reference_dir: data/reference/v3
+    stream_dir: data/main_data_Streams
+    processes:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+    - 9
+    - 10
+    split_mode: seen_process
+  loss:
+    type: masked_smooth_l1
+    use_y_edge_mask: true
+    normalize_targets: true
+  normalization:
+    scaler: standard
+    fit_on_train_only: true
+    mask_aware: true
+  debug:
+    print_first_batch: true
+    assert_no_leakage: true
+    export_predictions: true

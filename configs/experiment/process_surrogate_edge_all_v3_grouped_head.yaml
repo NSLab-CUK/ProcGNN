@@ -1,0 +1,108 @@
+﻿# Edge-all grouped-property head ?ㅽ뿕 ?ㅼ젙.
+# 紐⑹쟻: 湲곗〈 single EdgeDecoder ???Frac/Flow/Condition branch head瑜?鍮꾧탳?쒕떎.
+experiment_name: process_surrogate_edge_all_v3_grouped_head # run ?대쫫 prefix
+seed: 42                                                    # ?ы쁽??random seed
+device: cuda                                                # cuda ?먮뒗 cpu
+eval_only: false                                            # true硫??숈뒿 ????됯? ?꾩슜?쇰줈 ?ъ슜
+
+model_config: configs/model/process_encoder.yaml            # encoder/head 湲곕낯媛?train_config: configs/train/process_train.yaml              # optimizer/loss/early-stop 湲곕낯媛?data_config: configs/data/process_data.yaml                 # ?곗씠??洹몃옒??濡쒕뵫 湲곕낯媛?
+output_dir: outputs/process_surrogate_edge_all_v3_grouped_head # metrics, plots, debug 異쒕젰
+save_dir: outputs/process_surrogate_edge_all_v3_grouped_head/checkpoints # checkpoint 異쒕젰
+log_dir: outputs/process_surrogate_edge_all_v3_grouped_head/logs # log 異쒕젰
+resume_path: ""                                             # ?댁뼱 ?숈뒿??checkpoint 寃쎈줈
+
+overrides:
+  model:
+    # EdgeDecoder???좎??섎릺 ?대? output head留?grouped_property濡?援먯껜?쒕떎.
+    use_edge_stream_head: false       # 援?edge_stream head 鍮꾪솢?깊솕
+    use_edge_decoder: true            # y_edge_pred [num_edges, 12] ?앹꽦
+    edge_head_type: grouped_property  # Frac/Flow/Condition branch head ?ъ슜
+    edge_decoder_hidden_dim: 128      # grouped input projection dim
+    edge_oper_dim: 3                  # edge_oper ?낅젰: is_input/is_output/is_internal 3媛쒕쭔 ?ъ슜
+    stream_target_dim: 12             # grouped_property 12 stream features
+    edge_struct_dim: 3                # edge_struct_attr input: is_input/is_output/is_internal
+    edge_head_dropout: 0.1            # branch hidden block dropout
+    edge_head_shared_dims: [512, 512] # shared_proj hidden dims
+    edge_head_frac_dims: [256, 128]   # Frac_* 7媛?異쒕젰 branch hidden dims
+    edge_head_flow_dims: [512, 256, 128] # Mass/Mole/Vol flow 3媛?異쒕젰 branch hidden dims
+    edge_head_cond_dims: [256, 128]   # Pres/Temp 2媛?異쒕젰 branch hidden dims
+
+  data:
+    task_mode: edge_all               # ?꾩껜 canonical edge瑜??뚭??섎뒗 紐⑤뱶
+    edge_struct_include_join_flags: false # has_stream_key/join_ok??紐⑤뜽 ?낅젰?먯꽌 ?쒖쇅
+    normalize_y_edge: true            # y_edge property-wise z-score ?뺢퇋???ъ슜
+    normalize_targets: false          # legacy fixed target ?뺢퇋?붾뒗 edge_all?먯꽌 ?ъ슜?섏? ?딆쓬
+    train_data_path: data/datasets_v3/train.csv       # ?쇰컲 ?⑥씪 run train CSV
+    val_data_path: data/datasets_v3/val.csv           # ?쇰컲 ?⑥씪 run validation CSV
+    test_data_path: data/datasets_v3/test.csv         # ?쇰컲 ?⑥씪 run test CSV
+    edge_all_processes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] # ?ы븿??怨듭젙 踰덊샇
+    edge_all_split_mode: seen_process # train/val/test 紐⑤몢 媛숈? 怨듭젙 吏묓빀??遊?
+  train:
+    backward_mode: batch_total         # batch_total keeps the legacy train loop; edge_step enables edge-wise updates.
+    shuffle_edges_each_batch: true     # edge_step only.
+    scheduler_step_unit: epoch         # set optimizer_step when stepping scheduler per edge update.
+    gradient_accumulation_steps: 1     # edge_step forces this to 1.
+    debug_edge_step: false             # writes first-batch edge_step debug CSV when enabled.
+    max_train_batches: 0               # 0 means no limit; useful for smoke tests.
+    edge_weight_default: 1.0           # edge_step non-target edge weight.
+    edge_weight_target_edge: 5.0       # edge_step target edge weight.
+    use_all_edge_r2_loss_in_edge_step: false # edge_step uses single-edge supervised loss only.
+
+    # Optimizer / schedule
+    learning_rate: 0.0002             # Adam 怨꾩뿴 optimizer???쒖옉 learning rate. grouped head?먯꽌 NaN 諛⑹?瑜??꾪빐 ??쾶 ??    gradient_clip_norm: 0.5           # backward ???꾩껜 parameter gradient L2 norm????媛??댄븯濡??먮쫫. gradient ??＜ 諛⑹???    epochs: 3                         # 湲곕낯 epoch ?? k-fold runner?먯꽌 --max-epochs瑜?二쇰㈃ ??媛믪? ??뼱?⑥쭚
+    val_interval: 1                   # validation??紐?epoch留덈떎 ?뚮┫吏. 1?대㈃ 留?epoch validation
+
+    # Early stopping / best checkpoint 湲곗?
+    monitor_metric: val_target_stream_feature_macro_r2 # best checkpoint ?좏깮 湲곗?. validation??primary Frac R2瑜?怨듭젙 洹좏삎 ?됯퇏?쇰줈 遊?    monitor_mode: max                 # monitor_metric? ?댁닔濡?醫뗭쑝誘濡?max. loss瑜?湲곗??쇰줈 ?쇱쓣 ?뚮뒗 min ?ъ슜
+
+    # Base edge_all loss: 紐⑤뱺 愿痢?canonical edge??12媛?stream property瑜?留욎텛??湲곕낯 loss
+    loss_type_edge_all: smooth_l1      # y_edge_pred? normalized y_edge_true ?ъ씠??湲곕낯 ?뚭? loss. outlier??MSE蹂대떎 ??誘쇨컧
+    edge_all_use_y_edge_mask: true     # true?대㈃ stream join???깃났??edge(y_edge_mask=1)留?base loss???ы븿
+    use_edge_all_loss: true            # true?대㈃ ?꾩껜 edge/property 12李⑥썝 湲곕낯 loss瑜??ъ슜. 蹂댄넻 諛섎뱶??耳쒕몺
+
+    # Target-row Frac auxiliary loss: ?됯??먯꽌 以묒슂??answer edge??Frac_H2/Frac_CO2/Frac_H2O瑜???媛뺥븯寃??숈뒿
+    use_target_feature_loss: false      # target_stream_targets.csv 湲곕컲 target feature 蹂댁“ loss ?ъ슜 ?щ?
+    use_target_row_frac_loss: true     # target row媛 ?붽뎄?섎뒗 Frac property留?怨⑤씪 異붽? SmoothL1 loss ?곸슜
+    use_target_row_amount_loss: false  # Mole_Flow*Frac amount loss???꾩옱 誘몄궗?? Primary ?됯???Frac 湲곗??대씪 爰쇰몺
+    lambda_target_feature: 1.0         # target feature 蹂댁“ loss ?꾩껜 諛곗쑉. 湲곗〈 target-row loss 怨꾩뿴???곸쐞 weight
+    lambda_target_row_frac: 1.0        # target-row Frac loss 諛곗쑉. use_target_row_frac_loss=true???뚮쭔 ?섎? ?덉쓬
+    lambda_target_row_amount: 0.0      # amount loss 諛곗쑉. use_target_row_amount_loss=false???꾩옱 ?곹뼢 ?놁쓬
+
+    # Primary Frac loss: primary target row留?蹂꾨룄濡???吏곸젒 理쒖쟻?뷀븯??理쒖떊 蹂댁“ loss
+    primary_frac_loss_weight: 5.0
+    all_edge_r2_loss_weight: 0.05
+    all_edge_r2_min_count: 8
+    all_edge_r2_sst_threshold: 1.0e-3
+    all_edge_r2_loss_cap: 5.0
+    primary_frac_r2_min_count: 8       # R2 loss 怨꾩궛???꾩슂??feature蹂?理쒖냼 sample ?? 遺議깊븯硫??대떦 feature??skip
+    primary_frac_r2_sst_threshold: 1.0e-3 # true 媛?遺꾩궛(SST)???대낫???묒쑝硫?R2 loss skip. 嫄곗쓽 ?곸닔??target?먯꽌 遺덉븞??諛⑹?
+    primary_frac_r2_loss_cap: 5.0      # R2 loss 媛믪쓣 ??媛믪쑝濡?cap. ??텧?섎줉 ?덉젙?곸씠怨? ?믪씪?섎줉 R2 吏곸젒 ?뺣컯??媛뺥븿
+
+    # Target loss 怨꾩궛 怨듦컙 / balancing
+    target_feature_loss_scope: target_stream_edge_weighted_edge_all # target edge endpoints incident edges, all supervised features
+    use_target_stream_loss_weighting: true
+    target_stream_loss_weight: 5.0
+    target_stream_weighting_mode: unique_target_stream_edge_by_process
+    target_stream_weight_conflict_policy: max
+    allow_yaml_only_target_streams: false
+    target_incident_exclude_virtual_nodes: true
+    target_incident_virtual_node_names: [V_INPUT, V_OUTPUT]
+    target_incident_include_target_edge: true
+    target_incident_use_answer_edge_weight: false
+    target_feature_loss_space: normalized # target feature loss瑜?z-score normalized 怨듦컙?먯꽌 怨꾩궛. y_edge_pred 異쒕젰 怨듦컙怨??숈씪
+    target_feature_loss_balancing: process_target_balanced # ?뱀젙 怨듭젙/target row媛 loss瑜??낆젏?섏? ?딅룄濡?process? target 湲곗? 洹좏삎 媛以?
+    answer_edge_weight: 1.0
+    answer_edge_weight_h2: 1.0
+    answer_edge_weight_co2: 1.0
+    answer_edge_weight_h2o: 1.0
+    use_v4_target_edge_weighting: true # true?대㈃ target_stream_targets.csv 湲곗??쇰줈 base edge_all loss mask??property蹂?weight ?곸슜
+    v4_target_weighting_mode: target_row # target row媛 吏?뺥븳 answer edge + required property留??뺥솗??媛以?    use_v4_target_row_loss: false      # legacy v4 amount target-row loss 寃쎈줈. ?꾩옱 primary Frac loss? 以묐났?????덉뼱 爰쇰몺
+    v4_target_row_loss_weight: 0.1     # use_v4_target_row_loss=true???뚮쭔 ?곸슜?섎뒗 legacy loss 諛곗쑉. ?꾩옱???곹뼢 ?놁쓬
+    use_legacy_answer_weighting: false # ?덉쟾 answer-edge weighting??異붽?濡??곸슜?섏? ?딆쓬. 以묐났 媛以?諛⑹?
+
+    # Debug / export
+    edge_all_print_first_batch: true   # 泥?batch?먯꽌 tensor shape, edge mapping, answer edge ?꾩튂瑜?異쒕젰
+    edge_all_assert_no_leakage: true   # edge_struct_attr??y_edge target 媛믪씠 ?욎??붿? 鍮좊Ⅴ寃?寃??    edge_all_export_predictions: true  # ?숈뒿 ??prediction/metric CSV export. HPO 鍮꾧탳 ?뚯씪 ?앹꽦?먮룄 ?꾩슂
+
+
+

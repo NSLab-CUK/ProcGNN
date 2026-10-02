@@ -1,0 +1,98 @@
+protocol_id: final_protocol_260811
+proposed_config: configs/experiment/pinn/model_260805_10d_frac1.yaml
+target_schema:
+  dimension: 10
+  properties: [Temp, Pres, Frac_H2O, Frac_H2, Frac_CH4, Frac_CO2, Frac_CO, Frac_O2, Frac_N2, Mass_Flow]
+  vol_flow_policy: removed_from_prediction_loss_monitor_and_final_metrics
+common:
+  folds: [1, 2, 3, 4, 5]
+  process_ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  split_root: data/splits/all_processes_full100k_outer5_grouped_60_20_20
+  unseen_split_root: data/splits/single_process_full_unseen_60_20_20
+  monitor_metric: val_target_edge_property_mean_r2
+  monitor_mode: max
+  patience: 5
+experiments:
+  proposed_single_process:
+    model: Proposed
+    expected_runs: 50
+    training_scope: one_process_per_model_from_scratch
+    pretrained_checkpoint: forbidden
+    split_policy: canonical_joint_fold_filtered_by_process
+    comparison_set: single_process_baselines
+  single_process_baselines:
+    models: [M1, M2, M3, B1, B2, B3, B4, B5, B6, B7, G1, G2, G3]
+    display_names:
+      M1: SVR
+      M2: Random Forest
+      M3: XGBoost
+      B1: Kriging-KR31
+      B2: Cubic-RBF
+      B3: GTL-ANN
+      B4: Cumene-Efficiency-ANN
+      B5: Cumene-Destruction-ANN
+      B6: Reusable-Distillation-ANN
+      B7: Distillation-Boundary-GP
+      G1: GCN
+      G2: GIN
+      G3: GAT
+    expected_runs: 650
+    final_gnn_mapping: {G1: GCN, G2: GIN, G3: GAT}
+    excluded: [GraphSAGE, Proposed]
+    gnn_prediction_unit: one_target_edge
+    gnn_head: shared_10_property_head
+  multi_process_comparison:
+    models: [B6, GCN, GIN, GAT, Proposed]
+    display_names:
+      B6: Reusable-Distillation-ANN
+      GCN: GCN
+      GIN: GIN
+      GAT: GAT
+      Proposed: Proposed
+    expected_runs: 25
+    training_scope: one_joint_model_for_all_10_processes
+    generic_gnn_head: shared_across_all_processes_and_target_edges
+    generic_gnn_process_id_routing: forbidden
+  proposed_zero_shot:
+    expected_pretrain_runs: 10
+    expected_evaluation_runs: 50
+  proposed_data_efficiency:
+    ratios: [0.02, 0.04, 0.06, 0.08, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90]
+    max_epochs: 30
+    total_optimizer_steps: 80000
+    optimizer_step_policy: upper_cap
+    termination_condition: max_epochs_or_optimizer_step_cap
+    expected_runs: 650
+    early_stopping: false
+    checkpoint_selection: best_validation_within_30_epochs
+  computational_efficiency:
+    models: [B6, GCN, GIN, GAT, Proposed]
+    expected_measurements: 25
+    memory_metric: peak_gpu_allocated_mb
+    time_metric: total_training_wall_sec
+  explainability_shap:
+    model: Proposed
+    scope: target_predictions_only
+    expected_process_runs: 10
+    checkpoint_fold: 1
+    method: GradientExplainer
+    background_size: 32
+    explain_samples: 16
+    stream_attribution: only_when_raw_stream_features_exist
+  sensitivity_depth:
+    depths: [1, 2, 3, 4, 5, 6, 7]
+    logical_runs: 35
+    default_depth: 5
+    new_runs_after_default_reuse: 30
+  sensitivity_pin:
+    active_terms: [node_mass, node_component, node_atom]
+    default_weights: {node_mass: 1.0, node_component: 1.5e-7, node_atom: 0.2}
+    multipliers: [0.5, 1.0, 2.0]
+    logical_runs: 45
+    new_runs_after_shared_default_reuse: 30
+excluded_from_final_registry:
+  - ablation
+  - GraphSAGE
+  - generic_baseline_zero_shot_or_transfer
+  - old_data_efficiency_ratios_005_010_025_050_100
+  - independent_process_models_labeled_as_multi_process
