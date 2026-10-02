@@ -1,215 +1,155 @@
-# ProcGNN: Physics-Informed Graph Neural Networks for Chemical Process Surrogate Modeling
+# Physics-Informed Graph Neural Networks for Chemical Process Surrogate Modeling (ProcGNN)
 
-ProcGNN is a topology-aware framework for predicting stream properties in chemical-process flowsheets, developed at [Network Science Lab @ CUK](https://nslab-cuk.github.io/). Graph message passing, attention, and graph-level aggregation are implemented directly in PyTorch.
+ProcGNN is a process-graph learning framework for stream-property prediction, developed at [Network Science Lab @ CUK](https://nslab-cuk.github.io/) and implemented directly in PyTorch.
 
 [![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)](requirements_34.txt)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.5.1-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![CUDA](https://img.shields.io/badge/CUDA-12.1-76B900?logo=nvidia&logoColor=white)](requirements_34.txt)
 [![Last commit](https://img.shields.io/github/last-commit/NSLab-CUK/ProcGNN)](https://github.com/NSLab-CUK/ProcGNN/commits/main)
-[![Issues](https://img.shields.io/github/issues/NSLab-CUK/ProcGNN)](https://github.com/NSLab-CUK/ProcGNN/issues)
 [![Stars](https://img.shields.io/github/stars/NSLab-CUK/ProcGNN)](https://github.com/NSLab-CUK/ProcGNN/stargazers)
+[![Issues](https://img.shields.io/github/issues/NSLab-CUK/ProcGNN)](https://github.com/NSLab-CUK/ProcGNN/issues)
 
 ## 1. Overview
 
-We aim to build a process-graph surrogate that learns stream-level behavior from both flowsheet connectivity and operating conditions. ProcGNN represents unit operations as nodes and material streams as directed edges. Node and stream embeddings encode equipment roles, operating variables, and stream context, while known feed conditions provide additional conditioning for prediction.
+We aim to build a topology-aware surrogate that learns the relationships between flowsheet structure, operating conditions, and material-stream properties. ProcGNN represents a chemical process as a directed graph, with unit operations as nodes and material streams as edges. First, an embedding stage encodes equipment roles, operating variables, and stream context. Second, relational bidirectional GNN layers exchange edge-conditioned messages along and against the physical flow direction, using separate attention and update modules followed by directional fusion. Third, Set2Set readout captures graph-level context, and a shared stream decoder combines source-node, destination-node, stream, graph, and feed representations. Dedicated prediction branches estimate temperature and pressure, composition, and mass flow. The configured model also uses paired heat-exchanger stream metadata to refine the stream representation before decoding.
 
-The encoder uses relational bidirectional message passing to capture upstream and downstream interactions through separate attention, update, and directional-fusion modules. A Set2Set readout supplies graph-level context. The stream decoder combines source-node, destination-node, stream, graph, and feed representations, then predicts operating conditions, composition, and mass flow through dedicated output branches. The configured heat-exchanger relation module incorporates paired-stream metadata before stream decoding.
-
-Training combines stream-property supervision with physics-informed regularization for mass, component, and atom conservation. The repository also provides cross-process transfer experiments, sensitivity analyses, SHAP-based interpretation, and an economic module that uses the trained surrogate for constrained GA screening.
+The model predicts ten stream properties: temperature, pressure, seven mole fractions (H2O, H2, CH4, CO2, CO, O2, and N2), and mass flow rate. Composition is predicted through a softmax branch, while mass flow is learned in a transformed space. Training combines stream-property supervision with mass-, component-, and atom-conservation regularization. The repository supports experiments on ten SMR flowsheets, cross-process transfer, sensitivity analysis, SHAP interpretation, and GNN-coupled economic optimization.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5558ea5c-fa0b-47ac-b69a-9c46c9f591e9" width="1000" alt="ProcGNN architecture: process graph embeddings, bidirectional message passing, Set2Set readout, stream-property prediction heads, and physics-informed training objectives" />
+  <img src="https://github.com/user-attachments/assets/5558ea5c-fa0b-47ac-b69a-9c46c9f591e9" width="1000" alt="Overall ProcGNN architecture: process graph embeddings, bidirectional GNN layers, Set2Set readout, stream-property prediction heads, and conservation-based training" />
 </p>
-<p align="center"><em>Overall architecture of ProcGNN.</em></p>
-
-The supplied diagram illustrates a four-layer encoder. The current reproduction preset uses five layers; encoder depth is configurable in the model YAML.
-
-### Predicted stream properties
-
-Each stream prediction contains ten properties: temperature, pressure, the mole fractions of H2O, H2, CH4, CO2, CO, O2, and N2, and mass flow rate. The composition branch uses softmax; the mass-flow branch uses a transformed prediction space. Volume flow is excluded from the final ten-property prediction schema.
+<p align="center"><em>The overall architecture of ProcGNN.</em></p>
 
 ## 2. Reproducibility
 
 ### Datasets
 
-The experiment protocol covers ten steam-methane-reforming flowsheets (P01–P10). Training, validation, and test membership is defined by canonical grouped split manifests, with five folds. Preprocessing must be fitted on training data only, and paired methods must use the same partitions.
+Experiments cover ten steam-methane-reforming flowsheets (P01–P10) and ten stream properties. The evaluation protocol uses five canonical grouped folds. Preprocessing is fitted on training data only, and paired methods use the same split manifests.
 
-Raw simulator-derived datasets and trained checkpoints are managed separately and are not included in this Git repository. Before training or checkpoint-based evaluation, obtain approved local data and follow [data/README.md](data/README.md). The required layout includes:
+Raw simulator-derived data and trained checkpoints are managed separately and are not distributed in this Git repository. Obtain approved local data and follow [data/README.md](data/README.md) before training or checkpoint-based evaluation. The model expects merged process data, stream tables, graph specifications, heat-exchanger pairing metadata, and the original split manifests.
 
-```text
-data/
-├── datasets_v3/process_main_merged.csv
-├── main_data_Streams/
-├── process_specs/raw/
-├── reference/v3/
-└── splits/
-     ├── all_processes_full100k_outer5_grouped_60_20_20/
-     └── single_process_full_unseen_60_20_20/
-```
+### Requirements and Environment Setup
 
-### Requirements and environment setup
-
-The reported training environment used Python 3.10, PyTorch 2.5.1, and CUDA 12.1. The core model does not require PyTorch Geometric or DGL. Installable dependencies are listed in [requirements.txt](requirements.txt); [requirements_34.txt](requirements_34.txt) records the original server environment and is not a portable lockfile.
+The reported training environment used **Python 3.10, PyTorch 2.5.1, and CUDA 12.1**. Message passing, attention, and graph aggregation use native PyTorch operations; the core model does not require PyTorch Geometric or DGL. Dependencies are listed in [requirements.txt](requirements.txt). The original server package snapshot is available in [requirements_34.txt](requirements_34.txt), but is not a cross-platform lockfile.
 
 ```bash
-# Clone the repository
+# Download the source code
 git clone https://github.com/NSLab-CUK/ProcGNN.git
 cd ProcGNN
 
-# Create and activate a Python 3.10 environment
+# Create and activate a Python environment
 python3.10 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 
-# Install the CUDA 12.1 PyTorch build, then the remaining dependencies
+# Install PyTorch and the remaining dependencies
 python -m pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
 python -m pip install -r requirements.txt
 export PYTHONPATH=src
 ```
 
-For other CUDA versions or CPU-only installations, use the [official PyTorch installation instructions](https://pytorch.org/get-started/previous-versions/#v251).
+For other CUDA builds or CPU-only installations, see the [official PyTorch installation instructions](https://pytorch.org/get-started/previous-versions/#v251).
 
 <details>
-<summary>Windows PowerShell setup</summary>
+<summary>Windows PowerShell</summary>
 
-```powershell
-git clone https://github.com/NSLab-CUK/ProcGNN.git
-Set-Location ProcGNN
-py -3.10 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
-python -m pip install -r requirements.txt
-$env:PYTHONPATH = "src"
-```
-
-The training commands below use Bash line continuations. In PowerShell, enter the command on one line or use PowerShell line-continuation syntax.
+Use `py -3.10 -m venv .venv`, activate with `.\.venv\Scripts\Activate.ps1`, and set `$env:PYTHONPATH = "src"`. The commands below use Bash line continuations; enter them on one line or use PowerShell continuation syntax on Windows.
 
 </details>
 
-### How to train ProcGNN
+### How to Run ProcGNN
 
-Run commands from the repository root with the environment activated and `PYTHONPATH=src`.
+Run from the repository root with the environment activated. The default model configuration is [model_260805_10d_frac1.yaml](configs/experiment/pinn/model_260805_10d_frac1.yaml), and the experiment registry is [final_protocol_260811.yaml](configs/final_experiments/final_protocol_260811.yaml).
 
-The canonical model preset is [model_260805_10d_frac1.yaml](configs/experiment/pinn/model_260805_10d_frac1.yaml). Experiment families, folds, and comparison settings are defined in [final_protocol_260811.yaml](configs/final_experiments/final_protocol_260811.yaml).
-
-Print the full experiment command plan without starting training. This writes a plan JSON, but does not execute model runs:
-
-```bash
-python scripts/run_final_experiments.py --families all \
-   --plan-json outputs/reproduction/command_plan.json
-```
-
-Train one joint model across all ten flowsheets for each of the five folds:
+Train a joint model across all ten flowsheets, repeated over five folds:
 
 ```bash
 python scripts/run_process_kfold_experiments.py \
-   --base-config configs/experiment/pinn/model_260805_10d_frac1.yaml \
-   --splits-dir data/splits/all_processes_full100k_outer5_grouped_60_20_20 \
-   --merged-csv data/datasets_v3/process_main_merged.csv \
-   --process-ids 1 2 3 4 5 6 7 8 9 10 \
-   --joint-all-processes --only-folds 1 2 3 4 5 \
-   --max-epochs 30 --device cuda \
-   --output-root outputs/reproduction/proposed_joint
+  --base-config configs/experiment/pinn/model_260805_10d_frac1.yaml \
+  --splits-dir data/splits/all_processes_full100k_outer5_grouped_60_20_20 \
+  --merged-csv data/datasets_v3/process_main_merged.csv \
+  --process-ids 1 2 3 4 5 6 7 8 9 10 \
+  --joint-all-processes --only-folds 1 2 3 4 5 \
+  --max-epochs 30 --device cuda \
+  --output-root outputs/reproduction/proposed_joint
 ```
 
-Use a new output root for each reproduction run. Do not overwrite completed experiments.
+To inspect the complete experiment plan without starting training:
+
+```bash
+python scripts/run_final_experiments.py --families all \
+  --plan-json outputs/reproduction/command_plan.json
+```
+
+The plan command writes a JSON file but does not execute training. Always use a new output root and preserve the original data partitions when reproducing a reported result.
 
 ### Hyperparameters
 
-The following values describe the checked-in reproduction preset, not every historical experiment:
+Model and loss settings are defined in YAML. The current reproduction preset uses:
 
-| Setting | Default |
+| Hyperparameter | Value |
 |---|---|
-| Encoder | Relational bidirectional GNN |
-| Number of GNN layers | 5 |
-| Hidden dimension | 384 |
+| GNN layers / hidden dimension | 5 / 384 |
 | Graph readout | Set2Set, 3 processing steps |
 | Dropout | 0.1 |
-| Optimizer | AdamW |
-| Initial learning rate | 1 × 10⁻⁴ |
+| Optimizer / initial learning rate | AdamW / 1 × 10⁻⁴ |
 | Weight decay | 1 × 10⁻⁵ |
-| Batch size | One process graph |
-| Maximum epochs | 30 |
+| Batch size / maximum epochs | One process graph / 30 |
 | Gradient-clipping norm | 0.5 |
 
-Model and loss hyperparameters are configured through YAML. Common runner options include `--base-config`, `--process-ids`, `--only-folds`, `--max-epochs`, `--device`, and `--output-root`. Check the selected runner's `--help` before launching an experiment. Preserve the original configuration and split manifests when reproducing a reported result.
+The architecture figure illustrates a four-layer variant; the checked-in reproduction preset uses five layers. Encoder depth is controlled by `overrides.model.num_layers`.
 
-### Evaluation and analyses
+Useful training options include:
 
-The repository includes entry points for single-process and joint training, unseen-process transfer, data-efficiency transfer, baselines, sensitivity analysis, SHAP explanations, and computational-efficiency measurements. See the [experiment catalogue](docs/EXPERIMENT_CATALOG.md) and [script index](scripts/README.md) for the corresponding protocols and commands.
+- `--base-config`: YAML configuration for the experiment.
+- `--process-ids`: flowsheets to include, for example `1 2 3`.
+- `--only-folds`: fold indices to run, for example `1 2 3 4 5`.
+- `--max-epochs`: maximum training epochs, for example `30`.
+- `--device`: execution device, for example `cuda`.
+- `--output-root`: destination for the run artifacts.
 
-Aggregate already completed results:
+Use the selected script's `--help` for its complete argument list.
 
-```bash
-python scripts/aggregate_final_experiments.py \
-   --root outputs/0819final --baseline-root outputs/0819final/baselines
-```
+### Additional Experiments and Checks
 
-Compare equivalent stream/property metrics with matching folds and data partitions. Figures explicitly marked as model-based projections must not be presented as measured transfer results.
+The [experiment catalogue](docs/EXPERIMENT_CATALOG.md) and [script index](scripts/README.md) describe single-process training, baselines, unseen-process transfer, data-efficiency transfer, sensitivity analysis, SHAP explanations, and computational-efficiency measurements. Figures identified as model-based projections are not measured transfer results.
 
-### Economic optimization
+The [economic optimization module](economic%20module%20GA/module/README.md) supports constrained GA screening and Aspen handoff. Surrogate-screened candidates must be independently recalculated and constraint-checked in Aspen before they are reported as validated optima.
 
-The [economic module](economic%20module%20GA/module/README.md) connects stream predictions to equipment sizing, techno-economic indicators, and constrained GA search:
-
-```bash
-cd "economic module GA/module"
-python test_gnn_economic_smoke.py
-python run_ga_optimization.py \
-   --processes all --search-method ga --population 20 --generations 100 \
-   --seed 42 --device cuda \
-   --output-dir ../../outputs/economic_ga/reproduction
-```
-
-These commands require the approved data and trained checkpoint. GA outputs are surrogate-screened candidates, not Aspen-validated optima. Independent simulator recalculation and constraint checks are required before claiming validated improvement. See [ECONOMIC_GA_REPRODUCTION.md](docs/ECONOMIC_GA_REPRODUCTION.md).
-
-### Tests
-
-Run the lightweight model and protocol checks from the repository root:
+For a lightweight installation check using small CPU graphs:
 
 ```bash
-python -m pytest -q tests/test_process_surrogate_smoke.py \
-   tests/test_final_paper_protocol_260811.py
+python -m pip install pytest
+python -m pytest -q tests/test_process_surrogate_smoke.py
 ```
 
-Install `pytest` separately if it is not already available. The model smoke tests use small CPU graphs; the full protocol checks also inspect approved local reference files.
+See the [documentation index](docs/README.md) for further model details, data requirements, and reproducibility protocols.
 
-<details>
-<summary>Repository layout</summary>
+## 3. Reference
 
-| Path | Contents |
-|---|---|
-| `src/process_graph/` | Model, data, and experiment implementation |
-| `configs/` | Model presets and experiment configurations |
-| `scripts/` | Training, evaluation, plotting, and aggregation entry points |
-| `docs/` | Model derivations, protocols, and documentation |
-| `economic module GA/module/` | GNN-coupled economics, GA, and Aspen handoff |
-| `tests/` | Regression and smoke tests |
-| `data/` | Approved local datasets and split manifests; not uploaded |
-| `outputs/` | Local checkpoints, logs, figures, and tables; not uploaded |
-
-Historical configuration and provenance-script paths are retained because completed artifacts reference them. Existing results, reports, and workbooks are protected. See the [retention policy](docs/REPOSITORY_LAYOUT_260812.md) and [release guide](docs/GITHUB_RELEASE_GUIDE.md).
-
-</details>
-
-## 3. Reference and Documentation
-
-- [Reviewed model equations and implementation](docs/MODEL_260805_10D_FRAC1_equation_flow_reviewed.md)
-- [Final-paper experiment protocol](docs/FINAL_PAPER_PROTOCOL_260811.md)
+- [Model equations and implementation](docs/MODEL_260805_10D_FRAC1_equation_flow_reviewed.md)
+- [Final experiment protocol](docs/FINAL_PAPER_PROTOCOL_260811.md)
 - [Experiment catalogue](docs/EXPERIMENT_CATALOG.md)
-- [Documentation index](docs/README.md)
-
-Publication and preprint links will be added when the bibliographic details are finalized.
 
 ## 4. Citing ProcGNN
 
-If ProcGNN is useful in your research, please cite the associated paper once its publication details are available. Until then, reference this [source-code repository](https://github.com/NSLab-CUK/ProcGNN) and record the exact commit used for your experiments. A paper-specific BibTeX entry will be added after the title, author list, and publication identifier are confirmed.
+If ProcGNN is useful in your work, please reference the source-code repository and record the exact commit used for your experiments. The entry below cites the software repository, not a research paper:
+
+```bibtex
+@misc{procgnn_code,
+  title        = {ProcGNN},
+  howpublished = {\url{https://github.com/NSLab-CUK/ProcGNN}},
+  note         = {Source code repository}
+}
+```
+
+A paper-specific citation and publication link will be added once the title, author list, and DOI or preprint identifier are confirmed.
 
 ## 5. Contributors
 
 Developed at [Network Science Lab @ CUK](https://nslab-cuk.github.io/). Repository maintainer: [JunheeCho3337](https://github.com/JunheeCho3337).
 
-For questions or reproducibility issues, please [open a GitHub issue](https://github.com/NSLab-CUK/ProcGNN/issues).
+Please [open an issue](https://github.com/NSLab-CUK/ProcGNN/issues) for questions or reproducibility reports.
 
-No software license is currently included in the repository. A license will be added after institutional approval.
+No software license is currently included in the repository.
 
