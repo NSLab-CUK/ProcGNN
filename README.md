@@ -15,7 +15,7 @@ The model predicts ten stream properties in ten SMR flowsheets (P01–P10): `Tem
 | [`configs/`](configs/README.md) | Model, data, training, and experiment configurations |
 | [`docs/`](docs/README.md) | Model documentation, protocols, and release guidance |
 | [`tests/`](tests) | Regression and CPU smoke tests |
-| [`economic module GA/`](economic%20module%20GA/경제성%20평가%20모듈/README.md) | Constrained GA and Aspen-validation handoff tools |
+| [`economic module GA/module/`](economic%20module%20GA/module/README.md) | Constrained GA and Aspen-validation handoff tools |
 | [`data/`](data/README.md) | Local data and split manifests; contents are not uploaded |
 | `outputs/` | Local checkpoints, logs, tables, figures, and workbooks; not uploaded |
 | `requirements.txt` | Installable dependencies |
@@ -75,7 +75,7 @@ The [experiment catalogue](docs/EXPERIMENT_CATALOG.md) describes families, split
 ## Economic optimisation and Aspen validation
 
 ```bash
-cd "economic module GA/경제성 평가 모듈"
+cd "economic module GA/module"
 python test_gnn_economic_smoke.py
 python run_ga_optimization.py \
   --processes all --search-method ga --population 20 --generations 100 \

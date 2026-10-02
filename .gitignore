@@ -44,7 +44,7 @@ runs/
 /GNN_Aspen_재검증_통합비교.xlsx
 /Aspen_GNN_Optimization_Validation_20260915_revised.xlsx
 # Local methodology report; preserve on disk, do not upload with source code.
-/economic module GA/경제성 평가 모듈/*.docx
+/economic module GA/module/*.docx
 
 # Temporary exports and local archive mirrors
 /raidrive-researcher/

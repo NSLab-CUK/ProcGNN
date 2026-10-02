@@ -13,7 +13,7 @@ The public repository is `https://github.com/NSLab-CUK/ProcGNN`. The earlier Flo
 ```text
 configs/                 Versioned experiment and model configuration
 docs/                    Protocols, model documentation, and experiment catalogue
-economic module GA/      Source code for GNN-coupled economic optimisation
+economic module GA/module/ Source code for GNN-coupled economic optimisation
 scripts/                 Runnable training, evaluation, aggregation, and plotting scripts
 src/process_graph/       Reusable package implementation
 tests/                   Regression and smoke tests

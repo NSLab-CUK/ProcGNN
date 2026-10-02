@@ -29,7 +29,7 @@ The final registry records 1,445 model fits after its explicit reuse policy. Zer
 
 ## Economic GA experiment
 
-The submodule `economic module GA/경제성 평가 모듈/` connects a trained GNN surrogate to process economics and constrained GA search.
+The submodule `economic module GA/module/` connects a trained GNN surrogate to process economics and constrained GA search.
 
 | Stage | What is measured | Evidence |
 |---|---|---|

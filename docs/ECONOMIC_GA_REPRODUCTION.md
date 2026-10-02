@@ -41,7 +41,7 @@ For development, the runner supplies two smaller profiles:
 Run from the repository root with an activated Python environment and a verified CUDA PyTorch installation.
 
 ```powershell
-Set-Location -LiteralPath "economic module GA/경제성 평가 모듈"
+Set-Location -LiteralPath "economic module GA/module"
 python test_gnn_economic_smoke.py
 ./run_paper_experiments.ps1 -Profile smoke -Arms primary -Device cpu
 ./run_paper_experiments.ps1 -Profile pilot -Arms all -Device cuda

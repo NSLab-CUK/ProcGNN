@@ -29,7 +29,7 @@ The GA is a **surrogate-screening** procedure. Its candidates must be recalculat
 Run commands from this directory. The parent project must contain the final model configuration, trained checkpoint, stream data under `data/main_data_Streams`, and canonical graph metadata.
 
 ```bash
-cd "economic module GA/경제성 평가 모듈"
+cd "economic module GA/module"
 python test_gnn_economic_smoke.py
 ```
 
