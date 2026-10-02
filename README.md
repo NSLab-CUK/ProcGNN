@@ -152,17 +152,15 @@ A paper-specific citation and publication link will be added once the title, aut
 
 ## 5. Contributors
 
-<a href="https://github.com/NSLab-CUK/CaMol/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=NSLab-CUK/CaMol" />
+<a href="https://github.com/NSLab-CUK/ProcGNN/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=NSLab-CUK/ProcGNN" alt="ProcGNN contributors" />
 </a>
-
-
-
-<br>
 
 ***
 
-<a href="https://nslab-cuk.github.io/"><img src="https://github.com/NSLab-CUK/NSLab-CUK/raw/main/Logo_Dual_Wide.png"/></a>
+<a href="https://nslab-cuk.github.io/">
+  <img src="https://github.com/NSLab-CUK/NSLab-CUK/raw/main/Logo_Dual_Wide.png" alt="Network Science Lab, The Catholic University of Korea" />
+</a>
 
 ***
 
